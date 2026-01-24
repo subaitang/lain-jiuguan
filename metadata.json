@@ -1,0 +1,8 @@
+{
+  "requestFramePermissions": [
+    "microphone",
+    "geolocation"
+  ],
+  "name": "Copy of Copy of Wired Navi Interface - Lain Edition",
+  "description": "A Serial Experiments Lain inspired AI Roleplay interface featuring a retro Copland OS aesthetic, terminal chat, and Gemini-powered persona."
+}
