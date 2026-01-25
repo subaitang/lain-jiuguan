@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { Send, Wifi, Settings as SettingsIcon, Terminal, Volume2, VolumeX, RefreshCw, X, Square, RotateCcw, Monitor, Network, Disc, HardDrive, Image as ImageIcon, Speech, EyeOff, Paperclip, Smile, Edit2, Check, CloudLightning, Activity, Video, Copy, BrainCircuit, Mic, Database, Heart, Zap, AlertCircle, Reply, AtSign, Globe, Share2, User, UserPlus, Users, Languages, Sword, Dice5, Eye, Map, MessageCircle, Footprints, Shield, Skull, Dna, Hexagon, Cpu, PlayCircle, Hourglass, Target, ChevronUp, ChevronLeft, ChevronRight, PenTool, Loader2, MicOff, Brain, Map as MapIcon, Play, Save, FileText, LayoutGrid, EyeOff as EyeOffIcon, StickyNote, Scan, Box, Power, Maximize, AlertTriangle, Music } from 'lucide-react';
 import { NaviWindow } from './components/NaviWindow.tsx';
@@ -45,7 +46,6 @@ const generateId = () => {
     return Math.random().toString(36).substr(2, 9);
 };
 
-// IMPROVED MARKDOWN RENDERER
 const FormattedText: React.FC<{ text: string }> = ({ text }) => {
     if (!text) return null;
 
@@ -68,12 +68,10 @@ const FormattedText: React.FC<{ text: string }> = ({ text }) => {
                         </div>
                     );
                 } else {
-                    // Split paragraphs
                     const paragraphs = part.split('\n\n');
                     return (
                         <span key={i}>
                             {paragraphs.map((para, pIdx) => {
-                                // Inline formatting for each paragraph
                                 const inline = para.split(/(\*\*.*?\*\*|\*.*?\*|`.*?`)/g).map((subPart, j) => {
                                     if (subPart.startsWith('**') && subPart.endsWith('**')) {
                                         return <strong key={j} className="text-white font-bold drop-shadow-[0_0_2px_rgba(255,255,255,0.5)]">{subPart.slice(2, -2)}</strong>;
@@ -228,7 +226,6 @@ const App: React.FC = () => {
         try {
             const saved = localStorage.getItem('wired_settings');
             const parsed = saved ? JSON.parse(saved) : DEFAULT_SETTINGS;
-             // Ensure defaults for new fields
              if(!parsed.user.gender) parsed.user.gender = DEFAULT_SETTINGS.user.gender;
              if(!parsed.activeTargetId && parsed.activePersonaId) parsed.activeTargetId = parsed.activePersonaId;
              if(!parsed.extensions) parsed.extensions = [];
@@ -271,7 +268,6 @@ const App: React.FC = () => {
         }
     });
     
-    // Z-Index Management
     const [zIndices, setZIndices] = useState<Record<WindowType, number>>({
         [WindowType.CHAT]: 10,
         [WindowType.VIDEO]: 9,
@@ -341,14 +337,12 @@ const App: React.FC = () => {
     const [translatingMsgId, setTranslatingMsgId] = useState<string | null>(null);
     const [selectedTraceMsg, setSelectedTraceMsg] = useState<Message | null>(null);
 
-    // Global system busy state for long operations (Map gen, Char gen)
     const [systemBusy, setSystemBusy] = useState(false);
 
-    // NEW STATES FOR RP FEATURES
     const [isOOC, setIsOOC] = useState(false);
     const [showQuickNote, setShowQuickNote] = useState(false);
     const [quickNote, setQuickNote] = useState('');
-    const [startMenuOpen, setStartMenuOpen] = useState(false); // Start Menu Toggle
+    const [startMenuOpen, setStartMenuOpen] = useState(false); 
 
     const toggleWindow = (type: WindowType) => {
         bringToFront(type);
@@ -382,13 +376,12 @@ const App: React.FC = () => {
         setWindows(prev => ({ ...prev, [type]: { ...prev[type], ...update } }));
     };
 
-    // Helper for triggering system prompts from the UI
     const handleTriggerSystemAction = async (systemNote: string) => {
         if (isLoading) return;
         
         const actionMsg: Message = {
             id: generateId(),
-            role: 'user', // Send as user so AI responds
+            role: 'user', 
             content: `[System Action]: ${systemNote}`,
             timestamp: new Date().toLocaleTimeString()
         };
@@ -412,11 +405,8 @@ const App: React.FC = () => {
             if (sess.currentMood === undefined) sess.currentMood = "Neutral"; 
             if (!sess.worldEvents) sess.worldEvents = [];
             if (!sess.rpWorldContext) sess.rpWorldContext = "";
-            
-            // Fix: Ensure we don't drop legacy messages but also prioritize mode-specific arrays
             if (!sess.rpMessages) sess.rpMessages = sess.messages || [];
             if (!sess.msgMessages) sess.msgMessages = [];
-            
             if (!sess.npcRegistry) sess.npcRegistry = {};
 
             if (!sess.rpDate) {
@@ -444,7 +434,6 @@ const App: React.FC = () => {
             sessionService.setCurrentId(newSession.id);
             setCurrentSession(newSession);
             setOpeningOptions([]);
-            // Load note from localstorage for new session if persists
             const savedNote = localStorage.getItem(`wired_quicknote_${newSession.id}`);
             if (savedNote) setQuickNote(savedNote);
             else setQuickNote('');
@@ -455,7 +444,11 @@ const App: React.FC = () => {
 
     useEffect(() => {
         const handler = setTimeout(() => {
-            localStorage.setItem(`wired_quicknote_${currentSession.id}`, quickNote);
+            try {
+                localStorage.setItem(`wired_quicknote_${currentSession.id}`, quickNote);
+            } catch (e) {
+                console.warn("Storage quota full, quicknote not saved.");
+            }
         }, 500);
         return () => clearTimeout(handler);
     }, [quickNote, currentSession.id]);
@@ -467,7 +460,7 @@ const App: React.FC = () => {
     const setMessages = (newMessages: Message[] | ((prev: Message[]) => Message[])) => {
         setCurrentSession(prev => {
             const currentArray = settings.generation.chatMode === 'rp' ? prev.rpMessages : prev.msgMessages;
-            const updatedMsgs = typeof newMessages === 'function' ? newMessages(currentArray) : newMessages;
+            const updatedMsgs = typeof newMessages === 'function' ? newMessages(currentArray || []) : newMessages;
             
             const updatedSession = { 
                 ...prev, 
@@ -518,7 +511,7 @@ const App: React.FC = () => {
                      setCurrentSession(prev => {
                          const existingUserStats = prev.userRPStats || {
                              name: "Player",
-                             race: "Human", // Default Race
+                             race: "Human", 
                              level: 1, xp: 0, maxXp: 100,
                              hp: { current: 20, max: 20 },
                              mp: { current: 10, max: 10 },
@@ -547,7 +540,7 @@ const App: React.FC = () => {
     useEffect(() => {
         const checkMap = async () => {
             if (settings.generation.chatMode === 'rp' && !currentSession.mapData && !isLoading) {
-                const key = settings.api.apiKey;
+                const key = settings.api.apiKey || process.env.API_KEY;
                 if (!key) return;
                 const worldContext = currentSession.rpWorldContext || "A generic fantasy/sci-fi setting";
                 const map = await generateMapData(worldContext, key);
@@ -591,7 +584,11 @@ const App: React.FC = () => {
     useEffect(() => {
         if (currentSession.id) {
             const handler = setTimeout(() => {
-                localStorage.setItem(`wired_draft_input_${currentSession.id}`, input);
+                try {
+                    localStorage.setItem(`wired_draft_input_${currentSession.id}`, input);
+                } catch (e) {
+                    console.warn("Storage quota full, draft not saved.");
+                }
             }, 500);
             return () => clearTimeout(handler);
         }
@@ -611,7 +608,11 @@ const App: React.FC = () => {
             if (currentSession) {
                 sessionService.save(currentSession);
             }
-            localStorage.setItem('wired_settings', JSON.stringify(settings));
+            try {
+                localStorage.setItem('wired_settings', JSON.stringify(settings));
+            } catch (e) {
+                logger.error("AUTOSAVE_FAILED: STORAGE_QUOTA_FULL", "SYS");
+            }
             logger.log("SYSTEM_AUTOSAVE_EXEC", "SYS", "sys");
         }, 60000); 
         return () => clearInterval(interval);
@@ -619,12 +620,11 @@ const App: React.FC = () => {
 
     useEffect(() => {
         const handleClick = (e: MouseEvent) => {
-            audio.resume(); // Ensure audio context is ready on interaction
+            audio.resume(); 
             const target = e.target as HTMLElement;
             if (target.closest('button') || target.closest('a') || target.closest('.cursor-pointer')) {
                 audio.playClickSound();
             }
-            // Close start menu if clicked outside
             if (startMenuOpen && !target.closest('.start-menu-container')) {
                 setStartMenuOpen(false);
             }
@@ -634,12 +634,20 @@ const App: React.FC = () => {
     }, [startMenuOpen]);
 
     useEffect(() => {
-        localStorage.setItem('wired_settings', JSON.stringify(settings));
+        try {
+            localStorage.setItem('wired_settings', JSON.stringify(settings));
+        } catch (e) {
+            console.error("Settings save failed:", e);
+        }
         audio.toggleMute(!settings.sound.enabled);
     }, [settings]);
 
     useEffect(() => {
-        localStorage.setItem('wired_lore', JSON.stringify(lorebook));
+        try {
+            localStorage.setItem('wired_lore', JSON.stringify(lorebook));
+        } catch (e) {
+            console.error("Lorebook save failed:", e);
+        }
     }, [lorebook]);
 
     useEffect(() => {
@@ -721,7 +729,6 @@ const App: React.FC = () => {
                 isCharBirthday
             };
 
-            // AI Music Suggestion (Parallel)
             if (settings.music?.enabled && settings.music.mode === 'ai' && activePersona) {
                 generateMusicSuggestion(currentHistory, settings, activePersona).then(suggestion => {
                     if (suggestion) {
@@ -729,23 +736,18 @@ const App: React.FC = () => {
                             id: `ai-suggest-${Date.now()}`,
                             title: suggestion.title,
                             artist: suggestion.artist,
-                            url: "", // Placeholder or try to find
+                            url: "", 
                             platform: 'web',
                             addedBy: 'ai'
                         };
                         
-                        // Add to playlist if not already there
                         setSettings(prev => {
                             const playlist = prev.music?.playlist || [];
-                            // Avoid duplicates
                             if (playlist.some(t => t.title === newTrack.title)) return prev;
-                            
-                            // Auto-play if idle?
                             const newMusicState = { 
                                 ...prev.music!, 
                                 playlist: [...playlist, newTrack] 
                             };
-                            
                             return { ...prev, music: newMusicState };
                         });
                         
@@ -1235,12 +1237,12 @@ const App: React.FC = () => {
     const handleGenerateCampaign = async () => {
         if (!campaignKeywords.trim() || isGeneratingCampaign) return;
         setIsGeneratingCampaign(true);
-        setSystemBusy(true); // Trigger Hourglass
+        setSystemBusy(true); 
         audio.playLoadTick();
         
         try {
             const worldDescription = await generateCampaignSetting(campaignKeywords, settings);
-            const map = await generateMapData(worldDescription, settings.api.apiKey);
+            const map = await generateMapData(worldDescription, settings.api.apiKey || process.env.API_KEY || '');
 
             setCurrentSession(prev => {
                 const updated = { 
@@ -1352,7 +1354,7 @@ const App: React.FC = () => {
         const userMsg: Message = {
             id: generateId(),
             role: 'user',
-            content: input, // Store original input for display
+            content: input, 
             attachments: attachments.length > 0 ? attachments : undefined,
             timestamp: new Date().toLocaleTimeString(),
             replyTo: replyingTo ? {
@@ -1595,7 +1597,7 @@ const App: React.FC = () => {
                         if (settings.modules.transcription) {
                             setIsLoading(true);
                             try {
-                                const text = await transcribeAudio(base64Audio, settings.moduleConfigs?.transcription?.apiKey || settings.api.apiKey);
+                                const text = await transcribeAudio(base64Audio, settings.moduleConfigs?.transcription?.apiKey || settings.api.apiKey || process.env.API_KEY || '');
                                 setInput(prev => (prev ? prev + " " + text : text));
                             } catch (e) {
                                 console.error(e);
@@ -1756,7 +1758,7 @@ const App: React.FC = () => {
                         userPos={currentSession.userPos}
                         charPos={currentSession.charPos}
                         worldContext={currentSession.rpWorldContext}
-                        apiKey={settings.api.apiKey}
+                        apiKey={settings.api.apiKey || process.env.API_KEY || ''}
                         onUpdateMap={handleUpdateMap}
                         onClose={() => updateWindowState(WindowType.MAP, { closed: true })}
                         isMinimized={windows[WindowType.MAP].minimized}
@@ -2301,7 +2303,7 @@ const App: React.FC = () => {
                                                     </button>
                                                 </div>
                                                 
-                                                {!isLoading && msg.role === 'model' && idx === messages.length - 1 && (
+                                                {!isLoading && msg.role === 'model' && idx === (messages.length - 1) && (
                                                     <button 
                                                         onClick={() => handleReroll(msg.id)} 
                                                         className="opacity-0 group-hover:opacity-100 hover:text-white hover:bg-[color:var(--lain-cyan)]/20 transition-all ml-2 border border-[color:var(--lain-cyan)] px-1"
@@ -2360,7 +2362,7 @@ const App: React.FC = () => {
                                                             </div>
                                                         )}
 
-                                                        {msg.role === 'model' && settings.generation.streaming && !msg.translation && idx === messages.length - 1 ? (
+                                                        {msg.role === 'model' && settings.generation.streaming && !msg.translation && idx === (messages.length - 1) ? (
                                                             <Typewriter text={msg.content} soundEnabled={settings.sound.enabled} />
                                                         ) : (
                                                             <span className="relative z-10">
@@ -2679,7 +2681,7 @@ const App: React.FC = () => {
                                         {isLoading ? (
                                             <button onClick={handleStopGeneration} className="h-10 px-4 border border-[color:var(--lain-red)] bg-[color:var(--lain-red)]/10 text-[color:var(--lain-red)] font-bold hover:bg-[color:var(--lain-red)] hover:text-white uppercase tracking-wider transition-colors"><Square size={16} fill="currentColor" /></button>
                                         ) : (
-                                            <button onClick={handleSend} disabled={!input.trim() && attachments.length === 0} className="h-10 px-6 border border-[color:var(--lain-cyan)] bg-[color:var(--lain-cyan)]/10 text-[color:var(--lain-cyan)] font-bold hover:bg-[color:var(--lain-cyan)] hover:text-black transition-colors disabled:opacity-50 uppercase tracking-widest win98-bevel active:win98-bevel-pressed"><Send size={16} /></button>
+                                            <button onClick={handleSend} disabled={(!input.trim() && attachments.length === 0)} className="h-10 px-6 border border-[color:var(--lain-cyan)] bg-[color:var(--lain-cyan)]/10 text-[color:var(--lain-cyan)] font-bold hover:bg-[color:var(--lain-cyan)] hover:text-black transition-colors disabled:opacity-50 uppercase tracking-widest win98-bevel active:win98-bevel-pressed"><Send size={16} /></button>
                                         )}
                                     </div>
                                 </div>
@@ -2721,7 +2723,7 @@ const App: React.FC = () => {
                                         activePersona={activePersona} 
                                         onUpdatePersona={handleUpdatePersona} 
                                         messages={messages} 
-                                        apiKey={settings.api.apiKey} 
+                                        apiKey={settings.api.apiKey || process.env.API_KEY || ''} 
                                         opacity={settings.ui.visualFeedOpacity ?? 0.6} 
                                         setOpacity={(val) => setSettings(s => ({...s, ui: {...s.ui, visualFeedOpacity: val}}))} 
                                         settings={settings}

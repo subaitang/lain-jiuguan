@@ -4,16 +4,13 @@ class SoundEngine {
   private gainNode: GainNode | null = null;
   private analyser: AnalyserNode | null = null;
   
-  // Ambient Hum Nodes - Dual Oscillator for Interference Pattern
   private ambientOsc1: OscillatorNode | null = null;
   private ambientOsc2: OscillatorNode | null = null;
   private ambientGain: GainNode | null = null;
   private ghostTimerId: number | null = null;
   
-  // Track current playing source to allow stopping
   private currentSource: AudioBufferSourceNode | null = null;
 
-  // Microphone
   private micStream: MediaStream | null = null;
   private micSource: MediaStreamAudioSourceNode | null = null;
 
@@ -30,7 +27,7 @@ class SoundEngine {
       this.dataArray = new Uint8Array(this.analyser.frequencyBinCount);
 
       this.gainNode = this.ctx.createGain();
-      this.gainNode.gain.value = 0.4; // Base volume
+      this.gainNode.gain.value = 0.4; 
       
       this.gainNode.connect(this.analyser);
       this.analyser.connect(this.ctx.destination);
@@ -43,9 +40,9 @@ class SoundEngine {
 
     try {
       this.micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      if (this.ctx.state === 'suspended') await this.ctx.resume();
       this.micSource = this.ctx.createMediaStreamSource(this.micStream);
       this.micSource.connect(this.analyser!); 
-      this.resume();
     } catch (e) {
       console.error("Microphone access denied", e);
       throw e;
@@ -77,30 +74,27 @@ class SoundEngine {
     }
   }
 
-  resume() {
+  async resume() {
     if (this.ctx && this.ctx.state === 'suspended') {
-      this.ctx.resume();
+      await this.ctx.resume();
     }
   }
 
-  // Stops any currently playing PCM audio
   stop() {
       if (this.currentSource) {
           try {
               this.currentSource.stop();
-          } catch(e) { /* ignore if already stopped */ }
+          } catch(e) { }
           this.currentSource.disconnect();
           this.currentSource = null;
       }
   }
 
-  // Plays raw PCM data (16-bit, 24kHz default for Gemini TTS)
-  playPCM(base64Data: string, sampleRate = 24000, onEnded?: () => void) {
+  async playPCM(base64Data: string, sampleRate = 24000, onEnded?: () => void) {
       if (this.isMuted) return;
       if (!this.ctx) this.init();
-      this.resume();
+      await this.resume();
       
-      // Stop previous if any
       this.stop();
 
       try {
@@ -111,12 +105,10 @@ class SoundEngine {
               bytes[i] = binaryString.charCodeAt(i);
           }
           
-          // Convert 16-bit Int to Float32
           const float32 = new Float32Array(len / 2);
           const dataView = new DataView(bytes.buffer);
           
           for (let i = 0; i < len / 2; i++) {
-              // Gemini returns little-endian 16-bit PCM
               const int16 = dataView.getInt16(i * 2, true); 
               float32[i] = int16 / 32768.0;
           }
@@ -129,7 +121,9 @@ class SoundEngine {
           source.connect(this.gainNode!);
           
           source.onended = () => {
-              this.currentSource = null;
+              if (this.currentSource === source) {
+                this.currentSource = null;
+              }
               if(onEnded) onEnded();
           };
 
@@ -140,11 +134,8 @@ class SoundEngine {
       }
   }
 
-  // SOUND FX GENERATORS
-
   playLoadTick() {
       if (this.isMuted || !this.ctx || !this.gainNode) return;
-      this.resume();
       
       const t = this.ctx.currentTime;
       const osc = this.ctx.createOscillator();
@@ -164,20 +155,18 @@ class SoundEngine {
 
   playRetroBootSound() {
       if (this.isMuted) return;
-      if (!this.ctx) this.init(); // Auto-init if needed
-      this.resume();
+      if (!this.ctx) this.init(); 
       
       const t = this.ctx!.currentTime;
       const duration = 2.5; 
       
-      // Major Chord Swell (Cadd9) - C3, G3, C4, D4, E4, G4
       const freqs = [130.81, 196.00, 261.63, 293.66, 329.63, 392.00]; 
       
       freqs.forEach((f, i) => {
           const osc = this.ctx!.createOscillator();
           const gain = this.ctx!.createGain();
           
-          osc.type = i < 2 ? 'sawtooth' : 'sine'; // Bass is saw, highs are sine
+          osc.type = i < 2 ? 'sawtooth' : 'sine'; 
           osc.frequency.setValueAtTime(f, t);
           osc.detune.setValueAtTime((Math.random() - 0.5) * 15, t);
           
@@ -192,7 +181,6 @@ class SoundEngine {
           osc.stop(t + duration);
       });
 
-      // High-tech sparkle
       const sparkle = this.ctx!.createOscillator();
       const sGain = this.ctx!.createGain();
       sparkle.type = 'square';
@@ -214,7 +202,6 @@ class SoundEngine {
 
   playTypingSound(variance: number = 0) {
     if (this.isMuted || !this.ctx || !this.gainNode) return;
-    this.resume();
 
     const t = this.ctx.currentTime;
     const isHeavyKey = Math.abs(variance) > 50;
@@ -273,7 +260,6 @@ class SoundEngine {
 
   playSendSound() {
     if (this.isMuted || !this.ctx || !this.gainNode) return;
-    this.resume();
 
     const t = this.ctx.currentTime;
     const osc = this.ctx.createOscillator();
@@ -295,7 +281,6 @@ class SoundEngine {
 
   playReceiveSound() {
     if (this.isMuted || !this.ctx || !this.gainNode) return;
-    this.resume();
 
     const t = this.ctx.currentTime;
     const osc = this.ctx.createOscillator();
@@ -319,7 +304,6 @@ class SoundEngine {
 
   playWindowSound(opening: boolean) {
     if (this.isMuted || !this.ctx || !this.gainNode) return;
-    this.resume();
 
     const t = this.ctx.currentTime;
     const osc = this.ctx.createOscillator();
@@ -349,7 +333,6 @@ class SoundEngine {
 
   playConfirmSound() {
     if (this.isMuted || !this.ctx || !this.gainNode) return;
-    this.resume();
 
     const t = this.ctx.currentTime;
     const playTone = (freq: number, start: number) => {
@@ -371,7 +354,6 @@ class SoundEngine {
   
   playClickSound() {
       if (this.isMuted || !this.ctx || !this.gainNode) return;
-      this.resume();
       const t = this.ctx.currentTime;
       const osc = this.ctx.createOscillator();
       const gain = this.ctx.createGain();
@@ -386,11 +368,8 @@ class SoundEngine {
       osc.stop(t + 0.05);
   }
 
-  // --- RPG SPECIAL SOUNDS ---
-
   playLevelUpSound() {
       if (this.isMuted || !this.ctx || !this.gainNode) return;
-      this.resume();
       const t = this.ctx.currentTime;
       const freqs = [440, 554, 659, 880, 1108, 1318];
       freqs.forEach((f, i) => {
@@ -410,7 +389,6 @@ class SoundEngine {
 
   playCombatSound() {
       if (this.isMuted || !this.ctx || !this.gainNode) return;
-      this.resume();
       const t = this.ctx.currentTime;
       
       const bufferSize = this.ctx.sampleRate * 0.3;
@@ -449,7 +427,6 @@ class SoundEngine {
 
   playItemGetSound() {
       if (this.isMuted || !this.ctx || !this.gainNode) return;
-      this.resume();
       const t = this.ctx.currentTime;
       
       const osc = this.ctx.createOscillator();
@@ -482,7 +459,6 @@ class SoundEngine {
 
   playCritSuccess() {
       if (this.isMuted || !this.ctx || !this.gainNode) return;
-      this.resume();
       const t = this.ctx.currentTime;
       [523.25, 659.25, 783.99, 1046.50].forEach((f, i) => {
           const osc = this.ctx!.createOscillator();
@@ -502,7 +478,6 @@ class SoundEngine {
 
   playCritFail() {
       if (this.isMuted || !this.ctx || !this.gainNode) return;
-      this.resume();
       const t = this.ctx.currentTime;
       
       const osc1 = this.ctx.createOscillator();
@@ -529,7 +504,6 @@ class SoundEngine {
 
   playFailSound() {
       if (this.isMuted || !this.ctx || !this.gainNode) return;
-      this.resume();
       const t = this.ctx.currentTime;
       const osc = this.ctx.createOscillator();
       const gain = this.ctx.createGain();
@@ -544,18 +518,15 @@ class SoundEngine {
       osc.stop(t + 0.2);
   }
 
-  // --- NEW: EASTER EGG AMBIENT TRIGGER ---
-  // Background hum is now triggered with a low probability every interval.
   startAmbientHum() {
     if (!this.ctx || !this.gainNode) this.init();
     if (this.ghostTimerId) return;
 
     const attemptTrigger = () => {
-        // 5% chance to start the "ghost in the machine" hum
         if (Math.random() < 0.05 && !this.isMuted && this.ctx) {
             this.triggerGhostHum();
         }
-        this.ghostTimerId = window.setTimeout(attemptTrigger, 60000); // Check every minute
+        this.ghostTimerId = window.setTimeout(attemptTrigger, 60000); 
     };
     
     this.ghostTimerId = window.setTimeout(attemptTrigger, 10000);
@@ -565,7 +536,7 @@ class SoundEngine {
     if (!this.ctx || !this.gainNode) return;
     
     const t = this.ctx.currentTime;
-    const duration = 15 + Math.random() * 30; // Last for 15-45 seconds
+    const duration = 15 + Math.random() * 30; 
 
     this.ambientOsc1 = this.ctx.createOscillator();
     this.ambientOsc2 = this.ctx.createOscillator();
@@ -581,11 +552,9 @@ class SoundEngine {
     this.ambientOsc2.type = 'sine';
     this.ambientOsc2.frequency.value = 61 + (Math.random() * 2 - 1);
 
-    // Fade In
     this.ambientGain.gain.setValueAtTime(0, t);
     this.ambientGain.gain.linearRampToValueAtTime(0.015, t + 5);
     
-    // Fade Out
     this.ambientGain.gain.setValueAtTime(0.015, t + duration - 5);
     this.ambientGain.gain.linearRampToValueAtTime(0, t + duration);
 

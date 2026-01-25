@@ -10,30 +10,32 @@ export const cleanJsonString = (str: string): string => {
     // 移除潜在的控制字符
     const sanitized = str.replace(/[\u0000-\u001F\u007F-\u009F]/g, "");
     try {
-        // 使用更深层的正则匹配：寻找最外层的 { ... } 或 [ ... ]
+        // 寻找第一个 { 或 [
         const startBrace = sanitized.indexOf('{');
         const startBracket = sanitized.indexOf('[');
         
         let startIndex = -1;
-        let endIndex = -1;
-        let type: 'object' | 'array' = 'object';
-
         if (startBrace !== -1 && (startBracket === -1 || startBrace < startBracket)) {
             startIndex = startBrace;
-            endIndex = sanitized.lastIndexOf('}');
-            type = 'object';
-        } else if (startBracket !== -1) {
+        } else {
             startIndex = startBracket;
-            endIndex = sanitized.lastIndexOf(']');
-            type = 'array';
         }
 
-        if (startIndex !== -1 && endIndex !== -1 && endIndex > startIndex) {
+        if (startIndex === -1) {
+            // 如果没找到括号，尝试移除 Markdown 标记
+            return sanitized.replace(/^```json\s*/, '').replace(/^```\s*/, '').replace(/\s*```$/, '').trim();
+        }
+
+        // 寻找最后一个对应的括号
+        const lastBrace = sanitized.lastIndexOf('}');
+        const lastBracket = sanitized.lastIndexOf(']');
+        const endIndex = Math.max(lastBrace, lastBracket);
+
+        if (endIndex > startIndex) {
             return sanitized.substring(startIndex, endIndex + 1).trim();
         }
 
-        // 备用方案：移除 Markdown 标记
-        return sanitized.replace(/^```json\s*/, '').replace(/^```\s*/, '').replace(/\s*```$/, '').trim();
+        return sanitized.trim();
     } catch (e) {
         console.error("Critical JSON Clean Error:", e);
         return sanitized.trim();
@@ -359,10 +361,13 @@ export const generateImage = async (prompt: string, apiKey?: string, mode: 'nano
             contents: { parts: [{ text: prompt }] },
             config: { imageConfig: { aspectRatio: aspectRatio as any, imageSize: "1K" } }
         });
+        if (!result.candidates || !result.candidates[0] || !result.candidates[0].content) return null;
         for (const part of result.candidates[0].content.parts) {
             if (part.inlineData) return `data:image/png;base64,${part.inlineData.data}`;
         }
-    } catch (e) {}
+    } catch (e) {
+        console.error("Image generation error:", e);
+    }
     return null;
 };
 
@@ -373,10 +378,13 @@ export const editImage = async (imageSrc: string, prompt: string, apiKey?: strin
             model: 'gemini-2.5-flash-image',
             contents: { parts: [{ inlineData: { mimeType: 'image/png', data: imageSrc.split(',')[1] } }, { text: prompt }] }
         });
+        if (!result.candidates || !result.candidates[0] || !result.candidates[0].content) return null;
         for (const part of result.candidates[0].content.parts) {
             if (part.inlineData) return `data:image/png;base64,${part.inlineData.data}`;
         }
-    } catch(e) {}
+    } catch(e) {
+        console.error("Image editing error:", e);
+    }
     return null;
 };
 
