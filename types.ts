@@ -28,6 +28,7 @@ export interface LoreEntry {
     keywords: string;
     content: string;
     active: boolean;
+    linkedPersonaIds?: string[]; // New: Bind specific lore to specific characters
 }
 
 export interface VisitorRecord {
@@ -59,12 +60,13 @@ export interface PersonaSettings {
     ipAddress?: string;
     visualImage?: string;
     birthday?: string;
+    // New fields for SillyTavern/AIRP style cards
     personality?: string;
     likes?: string;
     dislikes?: string;
     relationships?: string;
-    notes?: string; 
-    allowEmoji?: boolean;
+    notes?: string; // Author's notes
+    allowEmoji?: boolean; // NEW: Control if the persona can use emojis
 }
 
 export interface UserSettings {
@@ -99,54 +101,6 @@ export interface GroupSettings {
     mode: 'msg' | 'rp';
 }
 
-// Added missing ActionCategory and QuickReplyOption
-export type ActionCategory = 'combat' | 'social' | 'exploration' | 'tech' | 'stealth' | 'generic';
-
-export interface QuickReplyOption {
-    label: string;
-    category?: ActionCategory;
-    attribute?: keyof RPAttributes;
-    dc?: number;
-    consequence?: string;
-}
-
-// Added missing RPDate
-export interface RPDate {
-    year: number;
-    month: number;
-    day: number;
-    dayCount: number;
-    timeOfDay: 'Morning' | 'Noon' | 'Evening' | 'Night';
-}
-
-// Added missing WorldEvent
-export interface WorldEvent {
-    id: string;
-    dayCount: number;
-    date: string;
-    headline: string;
-    content: string;
-    type: string;
-}
-
-// Added missing WeatherData
-export interface WeatherData {
-    temp: number;
-    condition: string;
-    location: string;
-    city?: string;
-    icon: 'sun' | 'cloud' | 'rain' | 'snow' | 'storm' | 'mist';
-    forecast?: Array<{
-        date: string;
-        temp?: number;
-        minTemp?: number;
-        maxTemp?: number;
-        condition: string;
-        icon: WeatherData['icon'];
-    }>;
-}
-
-// Added missing SocialComment and SocialPost
 export interface SocialComment {
     id: string;
     userId: string;
@@ -172,40 +126,49 @@ export interface SocialPost {
     strangerData?: StrangerData;
 }
 
-// Added missing CalendarNote and CalendarEvent
 export interface CalendarNote {
     id: string;
     date: string;
     content: string;
-    type: 'memo' | 'event' | 'holiday';
+    type: 'memo' | 'event';
 }
 
 export interface CalendarEvent {
     id: string;
-    title: string;
     date: string;
+    title: string;
 }
 
-// Added missing MapData
-export interface MapData {
-    biome: string;
-    grid: string[][];
+export interface CustomExtension {
+    id: string;
+    name: string;
+    content: string;
+    active: boolean;
+    position: 'system' | 'user_pre';
 }
 
-// Added missing MemoryLayers
-export interface MemoryLayers {
-    layer1: string;
-    layer2: string;
-    layer3: string;
+export interface ModuleConfig {
+    apiKey?: string;
+    enabled?: boolean;
 }
 
-// Added missing MusicTrack
+export interface VisualAsset {
+    id: string;
+    url: string;
+    type: 'image' | 'video';
+    keywords: string; // Comma separated keywords for context matching
+    active: boolean; // Is active for cycling
+    name?: string;
+    position?: string; // CSS object-position (e.g. 'center', 'top', 'bottom right')
+}
+
 export interface MusicTrack {
     id: string;
     title: string;
     artist: string;
     url: string;
-    platform: 'spotify' | 'netease' | 'qq' | 'apple' | 'youtube' | 'soundcloud' | 'local' | 'web';
+    duration?: number;
+    platform?: 'local' | 'web' | 'spotify' | 'netease' | 'qq' | 'apple' | 'youtube' | 'soundcloud';
     addedBy: 'user' | 'ai';
 }
 
@@ -226,10 +189,31 @@ export interface AppSettings {
         rpPerspective?: '1st' | '2nd' | '3rd' | 'DM';
         rpInnerMonologue?: boolean;
         thinking?: { enabled: boolean; budget: number };
+        logitBias?: Record<string, number>;
     };
     activeTargetId: string;
     characterLibrary: PersonaSettings[];
     groups: GroupSettings[];
+    socialPosts: SocialPost[];
+    calendarNotes: CalendarNote[];
+    extensions: CustomExtension[];
+    modules: {
+        search: boolean;
+        maps: boolean;
+        thinking: boolean;
+        veo: boolean;
+        imageGen: boolean;
+        imageEdit: boolean;
+        speech: boolean;
+        transcription: boolean;
+        analysis: boolean;
+        live: boolean;
+        autonomous: boolean;
+    };
+    moduleConfigs?: Record<string, ModuleConfig>;
+    translation?: ApiSettings;
+    memoryApi?: ApiSettings;
+    personaConfig?: ApiSettings;
     sound: {
         enabled: boolean;
         volume: number;
@@ -248,50 +232,20 @@ export interface AppSettings {
         visualFeedOpacity?: number;
         cursorSize?: number;
         customCursors?: Record<string, string>;
+        // New Visual Asset Manager Props
         visualAssets?: VisualAsset[];
         visualMode?: 'static' | 'cycle' | 'context';
+        visualCycleInterval?: number; // in seconds
     };
-    modules: {
-        search: boolean;
-        maps: boolean;
-        thinking: boolean;
-        veo: boolean;
-        imageGen: boolean;
-        imageEdit: boolean;
-        speech: boolean;
-        transcription: boolean;
-        analysis: boolean;
-        live: boolean;
-        autonomous: boolean;
-    };
-    // Added SocialPost type
-    socialPosts: SocialPost[];
-    // Added CalendarNote type
-    calendarNotes: CalendarNote[];
-    extensions: any[];
-    translation?: ApiSettings;
-    memoryApi?: ApiSettings;
-    personaConfig?: ApiSettings;
-    // Added missing music property
+    // NEW: Music Player Settings
     music?: {
         enabled: boolean;
         mode: 'manual' | 'ai';
         volume: number;
         playlist: MusicTrack[];
-        isPlaying: boolean;
         currentTrackId?: string;
+        isPlaying: boolean;
     };
-    moduleConfigs?: Record<string, any>;
-}
-
-export interface VisualAsset {
-    id: string;
-    url: string;
-    type: 'image' | 'video';
-    keywords: string;
-    active: boolean;
-    name?: string;
-    position?: string;
 }
 
 export interface RPAttributes {
@@ -319,10 +273,41 @@ export interface RPStats {
     gold: number;
     class: string;
     affection?: number;
-    // Added missing fields used in RPStatusViewer
+    // New Fields for RP
     alignment?: string;
     statusEffects?: string[];
-    limitGauge?: number;
+    limitGauge?: number; // 0-100
+    traits?: string[];
+}
+
+export interface RPDate {
+    year: number;
+    month: number;
+    day: number;
+    dayCount: number;
+    timeOfDay: 'Morning' | 'Noon' | 'Evening' | 'Night';
+}
+
+export interface WorldEvent {
+    id: string;
+    dayCount: number;
+    date: string;
+    headline: string;
+    content: string;
+    type: 'political' | 'environmental' | 'technological' | 'mystical';
+}
+
+export interface MapData {
+    grid: string[][];
+    width: number;
+    height: number;
+    biome?: string;
+}
+
+export interface MemoryLayers {
+    layer1: string; // Raw Details / User Input
+    layer2: string; // Short Summary / Episodic
+    layer3: string; // Long Summary / Core Themes
 }
 
 export interface ChatSession {
@@ -333,24 +318,23 @@ export interface ChatSession {
     messages: Message[];
     rpMessages?: Message[];
     msgMessages?: Message[];
-    summaries: string[];
-    dataTable: string;
+    summaries: string[]; // Legacy
+    dataTable: string;   // Legacy
+    memoryLayers?: MemoryLayers; // NEW: Tiered Memory
     affection: number;
     stress: number;
     energy: number;
     currentMood: string;
     lastModified: number;
-    npcRegistry?: Record<string, RPStats>;
+    worldEvents?: WorldEvent[];
+    rpDate?: RPDate;
     userRPStats?: RPStats;
     charRPStats?: RPStats;
-    // Added missing properties
-    rpDate?: RPDate;
     rpWorldContext?: string;
     mapData?: MapData;
     userPos?: { x: number, y: number };
     charPos?: { x: number, y: number };
-    memoryLayers?: MemoryLayers;
-    worldEvents?: WorldEvent[];
+    npcRegistry?: Record<string, RPStats>;
 }
 
 export enum WindowType {
@@ -366,5 +350,24 @@ export enum WindowType {
     WORLD_NEWS = 'WORLD_NEWS',
     THOUGHT_TRACE = 'THOUGHT_TRACE',
     MAP = 'MAP',
-    MUSIC = 'MUSIC'
+    MUSIC = 'MUSIC' // NEW
+}
+
+export interface WeatherData {
+    location: string;
+    temp: number;
+    condition: string;
+    icon: 'sun' | 'cloud' | 'rain' | 'snow' | 'storm' | 'mist';
+    city?: string;
+    forecast?: { date: string, maxTemp: number, minTemp: number, condition: string, icon: any }[];
+}
+
+export type ActionCategory = 'combat' | 'social' | 'exploration' | 'tech' | 'stealth';
+
+export interface QuickReplyOption {
+    label: string;
+    attribute?: string;
+    dc?: number;
+    consequence?: string;
+    category?: ActionCategory;
 }

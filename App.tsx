@@ -1,30 +1,28 @@
-
 import React, { useState, useEffect, useRef } from 'react';
-import ReactDOM from 'react-dom/client';
 import { Send, Wifi, Settings as SettingsIcon, Terminal, Volume2, VolumeX, RefreshCw, X, Square, RotateCcw, Monitor, Network, Disc, HardDrive, Image as ImageIcon, Speech, EyeOff, Paperclip, Smile, Edit2, Check, CloudLightning, Activity, Video, Copy, BrainCircuit, Mic, Database, Heart, Zap, AlertCircle, Reply, AtSign, Globe, Share2, User, UserPlus, Users, Languages, Sword, Dice5, Eye, Map, MessageCircle, Footprints, Shield, Skull, Dna, Hexagon, Cpu, PlayCircle, Hourglass, Target, ChevronUp, ChevronLeft, ChevronRight, PenTool, Loader2, MicOff, Brain, Map as MapIcon, Play, Save, FileText, LayoutGrid, EyeOff as EyeOffIcon, StickyNote, Scan, Box, Power, Maximize, AlertTriangle, Music } from 'lucide-react';
-import { NaviWindow } from './components/NaviWindow';
-import { AudioVisualizer } from './components/AudioVisualizer';
-import { BootScreen } from './components/BootScreen';
-import { SettingsWindow } from './components/SettingsWindow';
-import { FriendList } from './components/FriendList';
-import { VisualFeed } from './components/VisualFeed';
-import { Typewriter } from './components/Typewriter';
-import { SystemConsole } from './components/SystemConsole';
-import { SocialFeed } from './components/SocialFeed';
-import { WiredEye } from './components/WiredEye';
-import { MemoryTableViewer } from './components/MemoryTableViewer';
-import { SystemClock } from './components/SystemClock';
-import { ProfileViewer } from './components/ProfileViewer';
-import { RPStatusViewer } from './components/RPStatusViewer'; 
-import { WorldNewsViewer } from './components/WorldNewsViewer'; 
-import { DiceRoller } from './components/DiceRoller'; 
-import { DiceOverlay } from './components/DiceOverlay';
-import { FXOverlay, FXType } from './components/FXOverlay'; 
-import { ThoughtTraceViewer } from './components/ThoughtTraceViewer'; 
-import { ResonanceGraph } from './components/ResonanceGraph'; 
-import { TacticalMapWindow } from './components/TacticalMapWindow';
-import { CustomCursor } from './components/CustomCursor';
-import { MusicPlayerWindow } from './components/MusicPlayerWindow';
+import { NaviWindow } from './components/NaviWindow.tsx';
+import { AudioVisualizer } from './components/AudioVisualizer.tsx';
+import { BootScreen } from './components/BootScreen.tsx';
+import { SettingsWindow } from './components/SettingsWindow.tsx';
+import { FriendList } from './components/FriendList.tsx';
+import { VisualFeed } from './components/VisualFeed.tsx';
+import { Typewriter } from './components/Typewriter.tsx';
+import { SystemConsole } from './components/SystemConsole.tsx';
+import { SocialFeed } from './components/SocialFeed.tsx';
+import { WiredEye } from './components/WiredEye.tsx';
+import { MemoryTableViewer } from './components/MemoryTableViewer.tsx';
+import { SystemClock } from './components/SystemClock.tsx';
+import { ProfileViewer } from './components/ProfileViewer.tsx';
+import { RPStatusViewer } from './components/RPStatusViewer.tsx'; 
+import { WorldNewsViewer } from './components/WorldNewsViewer.tsx'; 
+import { DiceRoller } from './components/DiceRoller.tsx'; 
+import { DiceOverlay } from './components/DiceOverlay.tsx';
+import { FXOverlay, FXType } from './components/FXOverlay.tsx'; 
+import { ThoughtTraceViewer } from './components/ThoughtTraceViewer.tsx'; 
+import { ResonanceGraph } from './components/ResonanceGraph.tsx'; 
+import { TacticalMapWindow } from './components/TacticalMapWindow.tsx';
+import { CustomCursor } from './components/CustomCursor.tsx';
+import { MusicPlayerWindow } from './components/MusicPlayerWindow.tsx';
 import { generateLainResponse, translateContent, summarizeContent, generateAutonomousAction, generateSpeech, transcribeAudio, updateMemoryTable, generateRandomPersona, initializeRPStats, generateQuickActions, generateWorldNews, generateOpeningScenarios, generateCampaignSetting, generateMapData, generateMusicSuggestion } from './services/geminiService';
 import { audio } from './services/audioEngine';
 import { logger } from './services/logger';
@@ -181,8 +179,8 @@ const DEFAULT_SETTINGS: AppSettings = {
         chatMode: 'msg',
         rpPerspective: '1st',
         rpInnerMonologue: false,
-        thinking: { enabled: false, budget: 1024 }
-        // logitBias removed here to fix error
+        thinking: { enabled: false, budget: 1024 },
+        logitBias: {}
     },
     activeTargetId: 'default-lain',
     characterLibrary: [DEFAULT_PERSONA],
