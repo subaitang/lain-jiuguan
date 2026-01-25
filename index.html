@@ -5,11 +5,10 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Wired Navi // Lain</title>
-    <link rel="stylesheet" href="index.css">
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=VT323&family=Share+Tech_Mono&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=VT323&family=Share+Tech+Mono&display=swap" rel="stylesheet">
     <style>
       :root {
         --lain-cyan: #00f0ff;
@@ -29,13 +28,16 @@
         font-family: 'VT323', monospace;
         overflow: hidden;
         image-rendering: pixelated;
+        /* Hide system cursor globally to use custom software cursor */
         cursor: none !important;
       }
 
+      /* Hide cursor on interactive elements too */
       button, a, input, select, textarea, .cursor-pointer, [role="button"], iframe {
         cursor: none !important;
       }
 
+      /* --- Focus Indicators --- */
       button:focus-visible, 
       input:focus-visible, 
       select:focus-visible, 
@@ -48,6 +50,7 @@
         z-index: 50;
       }
 
+      /* --- Retro Scrollbars --- */
       ::-webkit-scrollbar {
         width: 12px;
         background: #000;
@@ -69,6 +72,7 @@
         background: #fff;
       }
 
+      /* --- Win98 Aesthetic Classes --- */
       .win98-bevel {
         background: var(--win-gray);
         border-top: 2px solid var(--win-light);
@@ -89,6 +93,7 @@
         color: var(--lain-cyan);
       }
 
+      /* --- Navi / Cyberpunk Classes --- */
       .navi-border {
         border: 1px solid var(--lain-cyan);
         box-shadow: 0 0 8px var(--lain-cyan-dim), inset 0 0 20px rgba(0, 240, 255, 0.05);
@@ -110,6 +115,7 @@
         text-shadow: 0 0 2px var(--lain-cyan), 0 0 8px var(--lain-cyan-dim);
       }
 
+      /* --- CRT & Glitch Effects --- */
       .scanlines {
         position: fixed;
         top: 0;
@@ -129,6 +135,7 @@
         opacity: 0.6;
       }
 
+      /* CRT Moving Beam */
       .scanlines::after {
         content: "";
         position: absolute;
@@ -165,6 +172,7 @@
         pointer-events: none;
       }
 
+      /* RGB Split Text Animation */
       .crt-flicker {
         animation: textShadow 4s infinite;
       }
@@ -178,6 +186,7 @@
         100% { text-shadow: 1px 0 0 rgba(255,0,0,0.4), -1px 0 0 rgba(0,240,255,0.4); }
       }
 
+      /* --- Utility for Background Grid --- */
       .bg-grid-pattern {
         background-image: 
           linear-gradient(rgba(0, 240, 255, 0.05) 1px, transparent 1px),
@@ -209,7 +218,6 @@
     <div id="root"></div>
     <div class="scanlines"></div>
     <div class="crt-vignette"></div>
-    <script type="module" src="index.tsx"></script>
   <script type="module" src="/index.tsx"></script>
 </body>
 </html>

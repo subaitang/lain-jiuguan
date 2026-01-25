@@ -24,13 +24,13 @@ import { ResonanceGraph } from './components/ResonanceGraph.tsx';
 import { TacticalMapWindow } from './components/TacticalMapWindow.tsx';
 import { CustomCursor } from './components/CustomCursor.tsx';
 import { MusicPlayerWindow } from './components/MusicPlayerWindow.tsx';
-import { generateLainResponse, translateContent, summarizeContent, generateAutonomousAction, generateSpeech, transcribeAudio, updateMemoryTable, generateRandomPersona, initializeRPStats, generateQuickActions, generateWorldNews, generateOpeningScenarios, generateCampaignSetting, generateMapData, generateMusicSuggestion } from './services/geminiService.ts';
-import { audio } from './services/audioEngine.ts';
-import { logger } from './services/logger.ts';
-import { sessionService } from './services/sessionService.ts';
-import { t } from './utils/translations.ts';
-import { Message, AppSettings, LoreEntry, ChatSession, PersonaSettings, WindowType, SocialPost, UserSettings, VisitorRecord, WeatherData, QuickReplyOption, WorldEvent, ActionCategory, RPDate, RPStats, GroupSettings, RPAttributes, ApiSettings, MapData, MemoryLayers, MusicTrack } from './types.ts';
-import { GEO_DATABASE } from './utils/geoData.ts';
+import { generateLainResponse, translateContent, summarizeContent, generateAutonomousAction, generateSpeech, transcribeAudio, updateMemoryTable, generateRandomPersona, initializeRPStats, generateQuickActions, generateWorldNews, generateOpeningScenarios, generateCampaignSetting, generateMapData, generateMusicSuggestion } from './services/geminiService';
+import { audio } from './services/audioEngine';
+import { logger } from './services/logger';
+import { sessionService } from './services/sessionService';
+import { t } from './utils/translations';
+import { Message, AppSettings, LoreEntry, ChatSession, PersonaSettings, WindowType, SocialPost, UserSettings, VisitorRecord, WeatherData, QuickReplyOption, WorldEvent, ActionCategory, RPDate, RPStats, GroupSettings, RPAttributes, ApiSettings, MapData, MemoryLayers, MusicTrack } from './types';
+import { GEO_DATABASE } from './utils/geoData';
 
 interface WindowState {
     minimized: boolean;
@@ -667,9 +667,7 @@ const App: React.FC = () => {
 
     useEffect(() => {
         if (settings.ui.autoScroll && !windows[WindowType.CHAT].closed && !windows[WindowType.CHAT].minimized) {
-            if (messagesEndRef.current) {
-                messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
-            }
+            messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
         }
     }, [messages, settings.ui.autoScroll, windows[WindowType.CHAT], attachments, editingMsgId, typingUsers, quickActions, openingOptions]);
 
@@ -758,13 +756,12 @@ const App: React.FC = () => {
                 });
             }
 
-            const currentSignal = abortControllerRef.current.signal;
             const response = await generateLainResponse(
                 currentHistory, 
                 settings, 
                 lorebook, 
                 currentSession.summaries || [], 
-                currentSignal,
+                abortControllerRef.current.signal,
                 currentSession.dataTable, 
                 currentSession.affection,
                 currentSession.currentMood,
@@ -776,8 +773,6 @@ const App: React.FC = () => {
                 currentSession.rpWorldContext
             );
             
-            if (currentSignal.aborted) return;
-
             let responseText = response.text;
             
             if (settings.generation.chatMode === 'rp') {
@@ -1399,10 +1394,8 @@ const App: React.FC = () => {
             abortControllerRef.current = null;
             setIsLoading(false);
             logger.log("Manual Abort Signal Sent.", "SYS", "warn");
-            if (typingTimeoutsRef.current) {
-                typingTimeoutsRef.current.forEach(clearTimeout);
-                typingTimeoutsRef.current = [];
-            }
+            typingTimeoutsRef.current.forEach(clearTimeout);
+            typingTimeoutsRef.current = [];
             setTypingUsers([]);
             setMessages(prev => [...prev, {
                 id: generateId(),

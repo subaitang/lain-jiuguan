@@ -1,12 +1,12 @@
 
 import React, { useState, useEffect, useRef } from 'react';
-import { NaviWindow } from './NaviWindow.tsx';
-import { TacticalMap } from './TacticalMap.tsx';
-import { MapData } from '../types.ts';
+import { NaviWindow } from './NaviWindow';
+import { TacticalMap } from './TacticalMap';
+import { MapData } from '../types';
 import { RefreshCw, Search, Map as MapIcon, Globe, Play, ZoomIn, ZoomOut, Maximize, Navigation } from 'lucide-react';
-import { generateMapData } from '../services/geminiService.ts';
-import { audio } from '../services/audioEngine.ts';
-import { t } from '../utils/translations.ts';
+import { generateMapData } from '../services/geminiService';
+import { audio } from '../services/audioEngine';
+import { t } from '../utils/translations';
 
 interface TacticalMapWindowProps {
     mapData?: MapData;

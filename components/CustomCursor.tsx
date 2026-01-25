@@ -2,24 +2,25 @@
 import React, { useEffect, useRef, useState } from 'react';
 
 interface CustomCursorProps {
-    isBusy?: boolean; 
-    isSystemBusy?: boolean; 
-    customCursors?: Record<string, string>; 
-    scale?: number; 
+    isBusy?: boolean; // For "Thinking" state (AI generating)
+    isSystemBusy?: boolean; // For "Hourglass" state (System loading)
+    customCursors?: Record<string, string>; // New: User provided cursor images map
+    scale?: number; // New: User provided scale
 }
 
 type CursorState = 'default' | 'pointer' | 'text' | 'wait' | 'thinking' | 'crosshair' | 'not-allowed';
 
 const CURSOR_ASSETS = {
-    default: 'https://files.catbox.moe/9ik3ab.png', 
-    pointer: 'https://files.catbox.moe/mw4on0.png', 
-    text: 'https://files.catbox.moe/225fxr.png',    
-    wait: 'https://files.catbox.moe/bql29i.png',    
-    thinking: 'https://files.catbox.moe/ydaoe3.png',
-    crosshair: 'https://files.catbox.moe/ifzojs.png',
-    notAllowed: 'https://files.catbox.moe/o5ph9n.png' 
+    default: 'https://files.catbox.moe/9ik3ab.png', // 光标
+    pointer: 'https://files.catbox.moe/mw4on0.png', // 点击 (NAVI图标/点击)
+    text: 'https://files.catbox.moe/225fxr.png',    // 文本框
+    wait: 'https://files.catbox.moe/bql29i.png',    // 沙漏
+    thinking: 'https://files.catbox.moe/ydaoe3.png',// 正在思考的大脑
+    crosshair: 'https://files.catbox.moe/ifzojs.png',// 框选
+    notAllowed: 'https://files.catbox.moe/o5ph9n.png' // 碎片
 };
 
+// Lerp function for smooth trailing
 const lerp = (start: number, end: number, factor: number) => {
     return start + (end - start) * factor;
 };
@@ -41,6 +42,7 @@ export const CustomCursor: React.FC<CustomCursorProps> = ({ isBusy, isSystemBusy
     const [isVisible, setIsVisible] = useState(true); 
     const [isClicking, setIsClicking] = useState(false);
 
+    // Preload images
     useEffect(() => {
         Object.values(CURSOR_ASSETS).forEach(src => {
             const img = new Image();
@@ -48,16 +50,17 @@ export const CustomCursor: React.FC<CustomCursorProps> = ({ isBusy, isSystemBusy
         });
     }, []);
 
+    // High-performance animation loop
     useEffect(() => {
         const animate = () => {
-            if (!mousePos.current || !trailPos1.current || !trailPos2.current || !trailPos3.current) return;
-
             const { x, y } = mousePos.current;
 
+            // Main Cursor
             if (cursorRef.current) {
                 cursorRef.current.style.transform = `translate3d(${x}px, ${y}px, 0)`;
             }
 
+            // Calculate Trails
             trailPos1.current.x = lerp(trailPos1.current.x, x, 0.4);
             trailPos1.current.y = lerp(trailPos1.current.y, y, 0.4);
             
@@ -67,6 +70,7 @@ export const CustomCursor: React.FC<CustomCursorProps> = ({ isBusy, isSystemBusy
             trailPos3.current.x = lerp(trailPos3.current.x, trailPos2.current.x, 0.4);
             trailPos3.current.y = lerp(trailPos3.current.y, trailPos2.current.y, 0.4);
 
+            // Apply Trails
             if (trailRef1.current) trailRef1.current.style.transform = `translate3d(${trailPos1.current.x}px, ${trailPos1.current.y}px, 0)`;
             if (trailRef2.current) trailRef2.current.style.transform = `translate3d(${trailPos2.current.x}px, ${trailPos2.current.y}px, 0)`;
             if (trailRef3.current) trailRef3.current.style.transform = `translate3d(${trailPos3.current.x}px, ${trailPos3.current.y}px, 0)`;
@@ -75,16 +79,13 @@ export const CustomCursor: React.FC<CustomCursorProps> = ({ isBusy, isSystemBusy
         };
         
         requestRef.current = requestAnimationFrame(animate);
-        return () => {
-            if (requestRef.current) cancelAnimationFrame(requestRef.current);
-        };
+        return () => cancelAnimationFrame(requestRef.current);
     }, []);
 
+    // Event Listeners
     useEffect(() => {
         const onMouseMove = (e: MouseEvent) => {
-            if (mousePos.current) {
-                mousePos.current = { x: e.clientX, y: e.clientY };
-            }
+            mousePos.current = { x: e.clientX, y: e.clientY };
             if (!isVisible) setIsVisible(true);
         };
 
@@ -95,8 +96,6 @@ export const CustomCursor: React.FC<CustomCursorProps> = ({ isBusy, isSystemBusy
             if (isBusy || isSystemBusy) return;
 
             const target = e.target as HTMLElement;
-            if (!target) return;
-            
             const computedStyle = window.getComputedStyle(target);
             const cursorStyle = computedStyle.cursor;
             const tagName = target.tagName.toLowerCase();
@@ -143,10 +142,12 @@ export const CustomCursor: React.FC<CustomCursorProps> = ({ isBusy, isSystemBusy
         };
     }, [isVisible, isBusy, isSystemBusy]);
 
+    // Priority Resolution
     let effectiveState = cursorState;
     if (isSystemBusy) effectiveState = 'wait';
     else if (isBusy) effectiveState = 'thinking';
 
+    // Image Selection with Custom Fallback
     const getCursorImage = (state: string) => {
         if (customCursors && customCursors[state]) return customCursors[state];
         if (state === 'default' && customCursors?.['default']) return customCursors['default'];
@@ -165,13 +166,15 @@ export const CustomCursor: React.FC<CustomCursorProps> = ({ isBusy, isSystemBusy
     const activeIcon = getCursorImage(effectiveState);
     const isInteractive = effectiveState === 'pointer';
     
+    // Classes
     let sizeClass = "w-5 h-auto";
     let offsetClass = "translate-x-0 translate-y-0"; 
     let effectiveScale = scale; 
-    let animationClass = "cursor-glitch"; 
+    let animationClass = "cursor-glitch"; // Default idle animation
 
+    // Adjustments based on state
     if (effectiveState === 'wait' || effectiveState === 'thinking') {
-        effectiveScale = 1; 
+        effectiveScale = 1; // Don't scale loading icons usually
         sizeClass = effectiveState === 'wait' ? "w-6 h-auto animate-spin-slow" : "w-8 h-auto animate-pulse";
         animationClass = "";
     } else if (effectiveState === 'text' || effectiveState === 'crosshair') {
@@ -182,7 +185,9 @@ export const CustomCursor: React.FC<CustomCursorProps> = ({ isBusy, isSystemBusy
     } else {
         if (effectiveState === 'pointer') {
             sizeClass = "w-6 h-auto";
+            // Scale up notably for pointer interactions
             effectiveScale = scale * 1.5; 
+            // Use a stable but glowing state for pointer to indicate interaction readiness
             animationClass = ""; 
         }
     }
@@ -218,6 +223,7 @@ export const CustomCursor: React.FC<CustomCursorProps> = ({ isBusy, isSystemBusy
                 }
             `}</style>
 
+            {/* Trail Elements */}
             {!isBusy && !isSystemBusy && (
                 <>
                     <div ref={trailRef3} className={`fixed top-0 left-0 z-[9996] pointer-events-none will-change-transform ${offsetClass}`} style={{ transform: `scale(${effectiveScale})` }}><TrailImage/></div>
@@ -226,6 +232,7 @@ export const CustomCursor: React.FC<CustomCursorProps> = ({ isBusy, isSystemBusy
                 </>
             )}
 
+            {/* Main Cursor */}
             <div 
                 ref={cursorRef}
                 className="fixed top-0 left-0 z-[9999] pointer-events-none mix-blend-screen will-change-transform"
@@ -243,10 +250,12 @@ export const CustomCursor: React.FC<CustomCursorProps> = ({ isBusy, isSystemBusy
                         className={`${sizeClass} drop-shadow-[0_0_5px_rgba(0,240,255,0.8)] ${animationClass}`}
                     />
                     
+                    {/* Decorative Ring for Default Cursor */}
                     {effectiveState === 'default' && !customCursors?.['default'] && (
                         <div className="absolute -top-2 -left-2 w-[140%] h-[140%] border border-[color:var(--lain-cyan)] rounded-full opacity-30 animate-spin-slow pointer-events-none border-dashed"></div>
                     )}
                     
+                    {/* Interaction Pulse Ring for Pointer */}
                     {isInteractive && (
                         <div className="absolute -inset-2 border border-[color:var(--lain-cyan)] rounded-full opacity-0 animate-[cursor-pulse-ring_1.5s_infinite] pointer-events-none"></div>
                     )}
