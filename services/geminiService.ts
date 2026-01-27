@@ -362,8 +362,8 @@ export const generateCampaignSetting = async (keywords: string, settings: AppSet
 };
 
 export const generateMapData = async (context: string, apiKey: string): Promise<MapData | undefined> => {
-    const grid = Array(10).fill(0).map(() => Array(10).fill(0).map(() => Math.random() > 0.8 ? '#' : '.'));
-    return { grid, width: 10, height: 10, biome: "Wired Zone" };
+    // Deprecated: Use worldEngine.ts
+    return undefined;
 };
 
 export const summarizeMemoryLayer = async (sourceContent: string, targetLevel: 2 | 3, config: ApiSettings): Promise<string> => {
