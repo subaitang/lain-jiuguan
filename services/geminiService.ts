@@ -51,7 +51,7 @@ const normalizeBaseUrl = (url: string) => {
 /**
  * 核心请求处理器：兼容 Google 官方 SDK 和自定义 OpenAI 接口 (SillyTavern, etc.)
  */
-const callModelApi = async (config: ApiSettings, payload: { 
+export const callModelApi = async (config: ApiSettings, payload: { 
     systemInstruction?: string, 
     contents: any[], 
     temperature?: number,
