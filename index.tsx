@@ -3,11 +3,20 @@ import ReactDOM from 'react-dom/client';
 import App from './App.tsx';
 import './index.css';
 
-// Suppress Vercel Toolbar warning about Zustand
+// Suppress Vercel Toolbar warnings and other noise
 const originalWarn = console.warn;
 console.warn = (...args) => {
-  if (typeof args[0] === 'string' && args[0].includes('Default export is deprecated')) return;
+  const msg = args.map(a => String(a)).join(' ');
+  if (msg.includes('Default export is deprecated') || msg.includes('zustand')) return;
   originalWarn(...args);
+};
+
+// Optional: Suppress specific errors if they are external noise
+const originalError = console.error;
+console.error = (...args) => {
+  const msg = args.map(a => String(a)).join(' ');
+  if (msg.includes('The message port closed before a response was received')) return;
+  originalError(...args);
 };
 
 const rootElement = document.getElementById('root');

@@ -309,7 +309,7 @@ export const SettingsWindow: React.FC<SettingsWindowProps> = ({
     
     const TabButton = ({ id, label, icon: Icon }: any) => (<button onClick={() => setActiveTab(id)} className={`px-4 py-2 text-xs flex items-center gap-2 border-b-2 transition-all duration-200 ${activeTab === id ? 'border-[color:var(--lain-cyan)] text-[color:var(--lain-cyan)] bg-[color:var(--lain-cyan)]/10' : 'border-transparent opacity-50 hover:opacity-100'}`}><Icon size={14} /> {label}</button>);
     
-    const ModuleToggle = ({ id, label, icon: Icon, description }: any) => (
+    const ModuleToggle = ({ id, label, icon: Icon, description, hasConfig }: any) => (
         <div className={`p-4 border transition-colors flex flex-col group ${settings.modules[id as keyof typeof settings.modules] ? 'border-[color:var(--lain-cyan)] bg-[color:var(--lain-cyan)]/5' : 'border-[color:var(--lain-cyan)]/20 bg-black/40'}`}>
             <div className="flex justify-between items-center mb-2">
                 <div className="flex flex-col gap-1">
@@ -331,6 +331,24 @@ export const SettingsWindow: React.FC<SettingsWindowProps> = ({
                     <div className={`w-3.5 h-3.5 bg-[color:var(--lain-cyan)] shadow-[0_0_5px_var(--lain-cyan)] transition-transform ${settings.modules[id as keyof typeof settings.modules] ? 'translate-x-5' : 'translate-x-0'}`}></div>
                 </div>
             </div>
+            {hasConfig && settings.modules[id as keyof typeof settings.modules] && (
+                <div className="mt-2 border-t border-[color:var(--lain-cyan)]/20 pt-2 animate-in slide-in-from-top-1">
+                    <label className="text-[9px] font-bold opacity-60 uppercase tracking-widest block mb-1">Module API Key (Override)</label>
+                    <input 
+                        type="password" 
+                        value={settings.moduleConfigs?.[id]?.apiKey || ''} 
+                        onChange={(e) => onUpdateSettings({
+                            ...settings, 
+                            moduleConfigs: {
+                                ...settings.moduleConfigs, 
+                                [id]: { ...(settings.moduleConfigs?.[id] || {}), apiKey: e.target.value }
+                            }
+                        })}
+                        placeholder="Leave empty to use Main Key"
+                        className="w-full bg-black border border-[color:var(--lain-cyan)]/30 p-1 text-[10px] focus:border-[color:var(--lain-cyan)] font-mono text-[color:var(--lain-cyan)]"
+                    />
+                </div>
+            )}
         </div>
     );
 
@@ -419,7 +437,7 @@ export const SettingsWindow: React.FC<SettingsWindowProps> = ({
                                 </div>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <ModuleToggle id="search" label={t('mod_search', language)} icon={Search} description={t('mod_search_desc', language)} />
-                                    <ModuleToggle id="maps" label={t('mod_maps', language)} icon={MapPin} description={t('mod_maps_desc', language)} />
+                                    <ModuleToggle id="maps" label={t('mod_maps', language)} icon={MapPin} description={t('mod_maps_desc', language)} hasConfig={true} />
                                     <ModuleToggle id="thinking" label={t('mod_thinking', language)} icon={BrainCircuit} description={t('mod_thinking_desc', language)} />
                                     <ModuleToggle id="veo" label={t('mod_veo', language)} icon={Video} description={t('mod_veo_desc', language)} />
                                     <ModuleToggle id="imageGen" label={t('mod_img_gen', language)} icon={Sparkles} description={t('mod_img_gen_desc', language)} />
