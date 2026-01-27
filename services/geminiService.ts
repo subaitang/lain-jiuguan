@@ -1,6 +1,6 @@
 
-import { GoogleGenAI, Type, Modality } from "@google/genai";
-import { Message, AppSettings, PersonaSettings, RPStats, RPDate, WorldEvent, QuickReplyOption, WeatherData, MapData, ApiSettings, LoreEntry, SocialPost, SocialComment } from "../types";
+import { GoogleGenAI, Modality } from "@google/genai";
+import { ApiSettings, AppSettings, LoreEntry, MapData, Message, PersonaSettings, QuickReplyOption, RPDate, RPStats, SocialPost, WeatherData, WorldEvent } from "../types";
 
 /**
  * 鲁棒的 JSON 提取器：从 AI 返回的杂乱文本中提取合法的 JSON 字符串
@@ -140,8 +140,10 @@ Text: "${text}"`;
 
 export const generatePersonaFromInput = async (input: string, config: ApiSettings, signal?: AbortSignal, mode?: string): Promise<PersonaSettings | null> => {
     try {
-        const prompt = `Create a character profile for: "${input}". 
-Return valid JSON ONLY with fields: name, age, gender, description, personality, likes, dislikes, writingStyle, scenario, exampleDialogue, systemPrompt, region, nativeLanguage.`;
+        const context = mode === 'rp' ? "Roleplay Character" : "Chat Persona";
+        const prompt = `Create a detailed ${context} profile based on the keyword/concept: "${input}".
+Return valid JSON ONLY with fields: name, age, gender, description, personality, likes, dislikes, writingStyle, scenario, exampleDialogue, systemPrompt, region, nativeLanguage.
+Ensure the JSON is strictly valid.`;
         
         const response = await callModelApi(config, {
             contents: [{ role: 'user', parts: [{ text: prompt }] }],
@@ -190,7 +192,17 @@ export const generateRandomUserStats = async (config: ApiSettings, signal?: Abor
 };
 
 export const generateRandomPersona = async (config: ApiSettings, signal?: AbortSignal, mode?: string): Promise<PersonaSettings | null> => {
-    return generatePersonaFromInput("A mysterious entity", config, signal, mode);
+    const archetypes = [
+        "A cyberpunk hacker", "A forgotten deity", "A space bounty hunter", "A sentient vending machine",
+        "A noir detective", "A time traveler", "A glitch in the system", "A bored student",
+        "A fantasy slime", "A rogue AI", "A corporate spy", "A lost astronaut"
+    ];
+    const seed = archetypes[Math.floor(Math.random() * archetypes.length)];
+    const prompt = mode === 'rp' 
+        ? `A unique, creative RPG character concept. Surprise me. Example: ${seed}`
+        : `A unique, creative chat partner. Surprise me. Example: ${seed}`;
+        
+    return generatePersonaFromInput(prompt, config, signal, mode);
 };
 
 export const generateLainResponse = async (
