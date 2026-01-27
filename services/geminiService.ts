@@ -61,7 +61,7 @@ export const callModelApi = async (config: ApiSettings, payload: {
 }) => {
     // 路径 A: Google 官方
     if (config.source === 'google' || !config.source) {
-        const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+        const ai = new GoogleGenAI({ apiKey: config.apiKey || process.env.API_KEY });
         const result = await ai.models.generateContent({
             model: config.modelName || 'gemini-3-flash-preview',
             contents: payload.contents,
@@ -141,9 +141,24 @@ Text: "${text}"`;
 export const generatePersonaFromInput = async (input: string, config: ApiSettings, signal?: AbortSignal, mode?: string): Promise<PersonaSettings | null> => {
     try {
         const context = mode === 'rp' ? "Roleplay Character" : "Chat Persona";
-        const prompt = `Create a detailed ${context} profile based on the keyword/concept: "${input}".
-Return valid JSON ONLY with fields: name, age, gender, description, personality, likes, dislikes, writingStyle, scenario, exampleDialogue, systemPrompt, region, nativeLanguage.
-Ensure the JSON is strictly valid.`;
+        const prompt = `You are a JSON generator. Create a detailed ${context} profile based on the keyword/concept: "${input}".
+Output must be a single valid JSON object starting with {.
+Required Fields: 
+- name (string)
+- age (string)
+- gender (string)
+- description (short bio)
+- personality (string)
+- likes (string)
+- dislikes (string)
+- writingStyle (e.g. "casual", "formal", "cryptic")
+- scenario (current situation)
+- exampleDialogue (User: Hello\\nChar: Hi)
+- systemPrompt (instructions for the AI model)
+- region (location)
+- nativeLanguage (e.g. "English")
+
+NO markdown formatting. NO conversational text. Just the JSON string.`;
         
         const response = await callModelApi(config, {
             contents: [{ role: 'user', parts: [{ text: prompt }] }],
@@ -171,9 +186,10 @@ Ensure the JSON is strictly valid.`;
 
 export const generateUserStatsFromInput = async (input: string, config: ApiSettings, signal?: AbortSignal, language: string = 'English'): Promise<RPStats | null> => {
     try {
-        const prompt = `Generate RPG stats for: "${input}". Language: ${language}.
-Return JSON ONLY: {name, level, race, gender, class, hp:{current,max}, mp:{current,max}, attributes:{STR,DEX,CON,INT,WIS,CHA}, inventory:[], equipment:[], skills:[], alignment, traits:[], gold, xp, maxXp}.
-Numeric values must be integers.`;
+        const prompt = `You are a JSON generator. Generate RPG stats for: "${input}". Language: ${language}.
+Output must be a single valid JSON object starting with {.
+Required Fields: {name, level, race, gender, class, hp:{current,max}, mp:{current,max}, attributes:{STR,DEX,CON,INT,WIS,CHA}, inventory:[], equipment:[], skills:[], alignment, traits:[], gold, xp, maxXp}.
+Numeric values must be integers. NO markdown. NO conversation.`;
         
         const response = await callModelApi(config, {
             contents: [{ role: 'user', parts: [{ text: prompt }] }],
@@ -272,7 +288,7 @@ export const updateMemoryTable = async (currentTable: string, recentMessages: Me
 };
 
 export const generateVisualDescription = async (history: Message[], apiKey?: string): Promise<string> => {
-    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+    const ai = new GoogleGenAI({ apiKey: apiKey || process.env.API_KEY });
     const text = history.slice(-3).map(m => m.content).join(' ');
     const res = await ai.models.generateContent({ model: 'gemini-3-flash-preview', contents: `Image prompt for: ${text}` });
     return res.text || "cyberpunk";
@@ -366,7 +382,7 @@ export const generateMusicSuggestion = async (history: Message[], settings: AppS
 };
 
 export const generateImage = async (prompt: string, apiKey?: string, mode: 'nano' | 'pro' = 'nano', aspectRatio: string = "1:1"): Promise<string | null> => {
-    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+    const ai = new GoogleGenAI({ apiKey: apiKey || process.env.API_KEY });
     try {
         const result = await ai.models.generateContent({
             model: mode === 'pro' ? 'gemini-3-pro-image-preview' : 'gemini-2.5-flash-image',
@@ -384,7 +400,7 @@ export const generateImage = async (prompt: string, apiKey?: string, mode: 'nano
 };
 
 export const editImage = async (imageSrc: string, prompt: string, apiKey?: string): Promise<string | null> => {
-    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+    const ai = new GoogleGenAI({ apiKey: apiKey || process.env.API_KEY });
     try {
         const result = await ai.models.generateContent({
             model: 'gemini-2.5-flash-image',
@@ -401,7 +417,7 @@ export const editImage = async (imageSrc: string, prompt: string, apiKey?: strin
 };
 
 export const generateSpeech = async (text: string, apiKey: string, voiceName: string): Promise<string | null> => {
-    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+    const ai = new GoogleGenAI({ apiKey: apiKey || process.env.API_KEY });
     try {
         const response = await ai.models.generateContent({
             model: "gemini-2.5-flash-preview-tts",
@@ -413,7 +429,7 @@ export const generateSpeech = async (text: string, apiKey: string, voiceName: st
 };
 
 export const transcribeAudio = async (base64Audio: string, apiKey: string): Promise<string> => {
-    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+    const ai = new GoogleGenAI({ apiKey: apiKey || process.env.API_KEY });
     try {
         const response = await ai.models.generateContent({
             model: "gemini-3-flash-preview",
