@@ -1,0 +1,4 @@
+const fs = require('fs');  
+let c = fs.readFileSync('components/SettingsWindow.tsx', 'utf8');  
+c = c.replace("if (apiLayer === 'memory') return settings.memoryApi || settings.api; return settings.personaConfig || settings.api;", "if (apiLayer === 'memory') return settings.memoryApi || settings.api; if (apiLayer === 'maps') return settings.mapsApi || { source: 'google', apiKey: '', baseUrl: '', modelName: '' }; return settings.personaConfig || settings.api;");  
+c = c.replace("else if (apiLayer === 'memory') onUpdateSettings({ ...settings, memoryApi: { ...(settings.memoryApi || settings.api), ...u } });", "else if (apiLayer === 'memory') onUpdateSettings({ ...settings, memoryApi: { ...(settings.memoryApi || settings.api), ...u } }); else if (apiLayer === 'maps') onUpdateSettings({ ...settings, mapsApi: { ...(settings.mapsApi || { source: 'google', apiKey: '', baseUrl: '', modelName: '' }), ...u } });");  

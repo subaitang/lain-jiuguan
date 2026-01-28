@@ -280,7 +280,7 @@ export const SettingsWindow: React.FC<SettingsWindowProps> = ({
     );
   };
 
-  const getCurrentApiConfig = () => { if (apiLayer === 'generation') return settings.api; if (apiLayer === 'translation') return settings.translation || { source: 'google', apiKey: '', baseUrl: '', modelName: '' }; if (apiLayer === 'memory') return settings.memoryApi || settings.api; if (apiLayer === 'maps') return settings.mapsApi || { source: 'google', apiKey: '', baseUrl: '', modelName: '' }; return settings.personaConfig || settings.api; };
+  const getCurrentApiConfig = () => { if (apiLayer === 'generation') return settings.api; if (apiLayer === 'translation') return settings.translation || { source: 'google', apiKey: '', baseUrl: '', modelName: '' }; if (apiLayer === 'memory') return settings.memoryApi || settings.api; if (apiLayer === 'maps') return settings.mapsApi || { source: 'google', apiKey: '', baseUrl: '', modelName: '' }; if (apiLayer === 'maps') return settings.mapsApi || { source: 'google', apiKey: '', baseUrl: '', modelName: '' }; return settings.personaConfig || settings.api; };
   const updateCurrentApiConfig = (u: any) => {
     if (apiLayer === 'generation') onUpdateSettings({ ...settings, api: { ...settings.api, ...u } });
     else if (apiLayer === 'translation') onUpdateSettings({ ...settings, translation: { ...(settings.translation || { source: 'google', apiKey: '', baseUrl: '', modelName: '' }), ...u } });
@@ -644,6 +644,7 @@ export const SettingsWindow: React.FC<SettingsWindowProps> = ({
                   <button onClick={() => setApiLayer('translation')} className={`px-4 py-2 text-xs font-bold tracking-wider border-b-2 transition-all shrink-0 ${apiLayer === 'translation' ? 'border-[color:var(--lain-cyan)] text-[color:var(--lain-cyan)]' : 'border-transparent opacity-50 hover:opacity-100'}`}>{t('set_trans_layer', language)}</button>
                   <button onClick={() => setApiLayer('memory')} className={`px-4 py-2 text-xs font-bold tracking-wider border-b-2 transition-all shrink-0 ${apiLayer === 'memory' ? 'border-[color:var(--lain-cyan)] text-[color:var(--lain-cyan)]' : 'border-transparent opacity-50 hover:opacity-100'}`}>{t('set_mem_layer', language)}</button>
                   <button onClick={() => setApiLayer('persona')} className={`px-4 py-2 text-xs font-bold tracking-wider border-b-2 transition-all shrink-0 ${apiLayer === 'persona' ? 'border-[color:var(--lain-cyan)] text-[color:var(--lain-cyan)]' : 'border-transparent opacity-50 hover:opacity-100'}`}>{t('set_persona_layer', language)}</button>
+                  <button onClick={() => setApiLayer('maps')} className={`px-4 py-2 text-xs font-bold tracking-wider border-b-2 transition-all shrink-0 ${apiLayer === 'maps' ? 'border-[color:var(--lain-cyan)] text-[color:var(--lain-cyan)]' : 'border-transparent opacity-50 hover:opacity-100'}`}>MAPS</button>
                   <button onClick={() => setApiLayer('maps')} className={`px-4 py-2 text-xs font-bold tracking-wider border-b-2 transition-all shrink-0 ${apiLayer === 'maps' ? 'border-[color:var(--lain-cyan)] text-[color:var(--lain-cyan)]' : 'border-transparent opacity-50 hover:opacity-100'}`}>MAPS</button>
                 </div>
                 <div className="space-y-4">
