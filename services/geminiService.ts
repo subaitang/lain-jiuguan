@@ -1,6 +1,6 @@
 
-import { GoogleGenAI, Type, Modality } from "@google/genai";
-import { Message, AppSettings, PersonaSettings, RPStats, RPDate, WorldEvent, QuickReplyOption, WeatherData, MapData, ApiSettings, LoreEntry, SocialPost, SocialComment } from "../types";
+import { GoogleGenAI, Modality } from "@google/genai";
+import { ApiSettings, AppSettings, LoreEntry, MapData, Message, PersonaSettings, QuickReplyOption, RPDate, RPStats, SocialPost, WeatherData, WorldEvent } from "../types";
 
 /**
  * 鲁棒的 JSON 提取器：从 AI 返回的杂乱文本中提取合法的 JSON 字符串
@@ -51,7 +51,7 @@ const normalizeBaseUrl = (url: string) => {
 /**
  * 核心请求处理器：兼容 Google 官方 SDK 和自定义 OpenAI 接口 (SillyTavern, etc.)
  */
-const callModelApi = async (config: ApiSettings, payload: { 
+export const callModelApi = async (config: ApiSettings, payload: { 
     systemInstruction?: string, 
     contents: any[], 
     temperature?: number,
@@ -61,7 +61,7 @@ const callModelApi = async (config: ApiSettings, payload: {
 }) => {
     // 路径 A: Google 官方
     if (config.source === 'google' || !config.source) {
-        const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+        const ai = new GoogleGenAI({ apiKey: config.apiKey || process.env.API_KEY });
         const result = await ai.models.generateContent({
             model: config.modelName || 'gemini-3-flash-preview',
             contents: payload.contents,
@@ -140,8 +140,25 @@ Text: "${text}"`;
 
 export const generatePersonaFromInput = async (input: string, config: ApiSettings, signal?: AbortSignal, mode?: string): Promise<PersonaSettings | null> => {
     try {
-        const prompt = `Create a character profile for: "${input}". 
-Return valid JSON ONLY with fields: name, age, gender, description, personality, likes, dislikes, writingStyle, scenario, exampleDialogue, systemPrompt, region, nativeLanguage.`;
+        const context = mode === 'rp' ? "Roleplay Character" : "Chat Persona";
+        const prompt = `You are a JSON generator. Create a detailed ${context} profile based on the keyword/concept: "${input}".
+Output must be a single valid JSON object starting with {.
+Required Fields: 
+- name (string)
+- age (string)
+- gender (string)
+- description (short bio)
+- personality (string)
+- likes (string)
+- dislikes (string)
+- writingStyle (e.g. "casual", "formal", "cryptic")
+- scenario (current situation)
+- exampleDialogue (User: Hello\\nChar: Hi)
+- systemPrompt (instructions for the AI model)
+- region (location)
+- nativeLanguage (e.g. "English")
+
+NO markdown formatting. NO conversational text. Just the JSON string.`;
         
         const response = await callModelApi(config, {
             contents: [{ role: 'user', parts: [{ text: prompt }] }],
@@ -169,9 +186,10 @@ Return valid JSON ONLY with fields: name, age, gender, description, personality,
 
 export const generateUserStatsFromInput = async (input: string, config: ApiSettings, signal?: AbortSignal, language: string = 'English'): Promise<RPStats | null> => {
     try {
-        const prompt = `Generate RPG stats for: "${input}". Language: ${language}.
-Return JSON ONLY: {name, level, race, gender, class, hp:{current,max}, mp:{current,max}, attributes:{STR,DEX,CON,INT,WIS,CHA}, inventory:[], equipment:[], skills:[], alignment, traits:[], gold, xp, maxXp}.
-Numeric values must be integers.`;
+        const prompt = `You are a JSON generator. Generate RPG stats for: "${input}". Language: ${language}.
+Output must be a single valid JSON object starting with {.
+Required Fields: {name, level, race, gender, class, hp:{current,max}, mp:{current,max}, attributes:{STR,DEX,CON,INT,WIS,CHA}, inventory:[], equipment:[], skills:[], alignment, traits:[], gold, xp, maxXp}.
+Numeric values must be integers. NO markdown. NO conversation.`;
         
         const response = await callModelApi(config, {
             contents: [{ role: 'user', parts: [{ text: prompt }] }],
@@ -190,7 +208,17 @@ export const generateRandomUserStats = async (config: ApiSettings, signal?: Abor
 };
 
 export const generateRandomPersona = async (config: ApiSettings, signal?: AbortSignal, mode?: string): Promise<PersonaSettings | null> => {
-    return generatePersonaFromInput("A mysterious entity", config, signal, mode);
+    const archetypes = [
+        "A cyberpunk hacker", "A forgotten deity", "A space bounty hunter", "A sentient vending machine",
+        "A noir detective", "A time traveler", "A glitch in the system", "A bored student",
+        "A fantasy slime", "A rogue AI", "A corporate spy", "A lost astronaut"
+    ];
+    const seed = archetypes[Math.floor(Math.random() * archetypes.length)];
+    const prompt = mode === 'rp' 
+        ? `A unique, creative RPG character concept. Surprise me. Example: ${seed}`
+        : `A unique, creative chat partner. Surprise me. Example: ${seed}`;
+        
+    return generatePersonaFromInput(prompt, config, signal, mode);
 };
 
 export const generateLainResponse = async (
@@ -260,7 +288,7 @@ export const updateMemoryTable = async (currentTable: string, recentMessages: Me
 };
 
 export const generateVisualDescription = async (history: Message[], apiKey?: string): Promise<string> => {
-    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+    const ai = new GoogleGenAI({ apiKey: apiKey || process.env.API_KEY });
     const text = history.slice(-3).map(m => m.content).join(' ');
     const res = await ai.models.generateContent({ model: 'gemini-3-flash-preview', contents: `Image prompt for: ${text}` });
     return res.text || "cyberpunk";
@@ -334,8 +362,8 @@ export const generateCampaignSetting = async (keywords: string, settings: AppSet
 };
 
 export const generateMapData = async (context: string, apiKey: string): Promise<MapData | undefined> => {
-    const grid = Array(10).fill(0).map(() => Array(10).fill(0).map(() => Math.random() > 0.8 ? '#' : '.'));
-    return { grid, width: 10, height: 10, biome: "Wired Zone" };
+    // Deprecated: Use worldEngine.ts
+    return undefined;
 };
 
 export const summarizeMemoryLayer = async (sourceContent: string, targetLevel: 2 | 3, config: ApiSettings): Promise<string> => {
@@ -354,7 +382,7 @@ export const generateMusicSuggestion = async (history: Message[], settings: AppS
 };
 
 export const generateImage = async (prompt: string, apiKey?: string, mode: 'nano' | 'pro' = 'nano', aspectRatio: string = "1:1"): Promise<string | null> => {
-    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+    const ai = new GoogleGenAI({ apiKey: apiKey || process.env.API_KEY });
     try {
         const result = await ai.models.generateContent({
             model: mode === 'pro' ? 'gemini-3-pro-image-preview' : 'gemini-2.5-flash-image',
@@ -372,7 +400,7 @@ export const generateImage = async (prompt: string, apiKey?: string, mode: 'nano
 };
 
 export const editImage = async (imageSrc: string, prompt: string, apiKey?: string): Promise<string | null> => {
-    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+    const ai = new GoogleGenAI({ apiKey: apiKey || process.env.API_KEY });
     try {
         const result = await ai.models.generateContent({
             model: 'gemini-2.5-flash-image',
@@ -389,7 +417,7 @@ export const editImage = async (imageSrc: string, prompt: string, apiKey?: strin
 };
 
 export const generateSpeech = async (text: string, apiKey: string, voiceName: string): Promise<string | null> => {
-    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+    const ai = new GoogleGenAI({ apiKey: apiKey || process.env.API_KEY });
     try {
         const response = await ai.models.generateContent({
             model: "gemini-2.5-flash-preview-tts",
@@ -401,7 +429,7 @@ export const generateSpeech = async (text: string, apiKey: string, voiceName: st
 };
 
 export const transcribeAudio = async (base64Audio: string, apiKey: string): Promise<string> => {
-    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+    const ai = new GoogleGenAI({ apiKey: apiKey || process.env.API_KEY });
     try {
         const response = await ai.models.generateContent({
             model: "gemini-3-flash-preview",

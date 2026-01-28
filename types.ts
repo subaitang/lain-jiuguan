@@ -214,6 +214,7 @@ export interface AppSettings {
     translation?: ApiSettings;
     memoryApi?: ApiSettings;
     personaConfig?: ApiSettings;
+    mapsApi?: ApiSettings; // NEW: Dedicated Map API
     sound: {
         enabled: boolean;
         volume: number;
@@ -297,11 +298,22 @@ export interface WorldEvent {
     type: 'political' | 'environmental' | 'technological' | 'mystical';
 }
 
+export interface MapNode {
+    x: number;
+    y: number;
+    type: 'room' | 'corridor' | 'loot' | 'enemy' | 'entrance' | 'exit' | 'poi';
+    description?: string;
+    eventId?: string;
+    icon?: string;
+}
+
 export interface MapData {
     grid: string[][];
     width: number;
     height: number;
     biome?: string;
+    nodes?: MapNode[]; // Rich interaction points
+    legend?: Record<string, string>;
 }
 
 export interface MemoryLayers {
