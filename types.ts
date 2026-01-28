@@ -175,6 +175,7 @@ export interface MusicTrack {
 export interface AppSettings {
     user: UserSettings;
     api: ApiSettings;
+    mapApi?: ApiSettings; // Dedicated API for Map Generation
     generation: {
         maxContextLength: number;
         maxOutputTokens: number;
@@ -297,11 +298,22 @@ export interface WorldEvent {
     type: 'political' | 'environmental' | 'technological' | 'mystical';
 }
 
+export interface MapTile {
+    x: number;
+    y: number;
+    type: 'wall' | 'floor' | 'open' | 'obstacle' | 'hazard' | 'point_of_interest' | 'player' | 'npc';
+    symbol?: string; // fallback char
+    description?: string;
+    icon?: string; // lucide icon name
+}
+
 export interface MapData {
-    grid: string[][];
+    grid?: string[][]; // Legacy support
+    tiles?: MapTile[]; // New structure
     width: number;
     height: number;
     biome?: string;
+    difficulty?: number;
 }
 
 export interface MemoryLayers {

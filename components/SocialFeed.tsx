@@ -5,7 +5,8 @@ import { NaviWindow } from './NaviWindow';
 import { Heart, MessageCircle, Send, Plus, User, Trash2, RefreshCw, UserPlus } from 'lucide-react';
 import { audio } from '../services/audioEngine';
 import { t } from '../utils/translations';
-import { generateSocialComment, generateSocialFeedRefresh, generatePersonaFromInput } from '../services/geminiService';
+import { generatePersonaFromInput } from '../services/geminiService';
+import { generateSocialComment, generateSocialFeedRefresh } from '../services/socialEngine';
 
 interface SocialFeedProps {
     settings: AppSettings;

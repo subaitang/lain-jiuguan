@@ -1,305 +1,159 @@
 
-import React, { useEffect, useRef } from 'react';
+import { AlertTriangle, Box, Footprints, Gem, Hexagon, Skull, Target } from 'lucide-react';
+import React, { useRef, useState } from 'react';
 import { MapData } from '../types';
 
 interface TacticalMapProps {
-    mapData?: MapData;
-    userPos?: { x: number, y: number };
-    charPos?: { x: number, y: number };
-    className?: string;
-    zoom?: number;
-    panOffset?: { x: number, y: number };
-    onPan?: (dx: number, dy: number) => void;
-    interactive?: boolean;
+  mapData?: MapData;
+  userPos?: { x: number, y: number };
+  charPos?: { x: number, y: number };
+  className?: string;
+  zoom?: number;
+  panOffset?: { x: number, y: number };
+  onPan?: (dx: number, dy: number) => void;
+  interactive?: boolean;
 }
 
-export const TacticalMap: React.FC<TacticalMapProps> = ({ 
-    mapData, 
-    userPos, 
-    charPos, 
-    className, 
-    zoom = 1, 
-    panOffset = { x: 0, y: 0 },
-    onPan,
-    interactive = false
+export const TacticalMap: React.FC<TacticalMapProps> = ({
+  mapData,
+  userPos,
+  charPos,
+  className,
+  zoom = 1,
+  panOffset = { x: 0, y: 0 },
+  onPan,
+  interactive = false
 }) => {
-    const canvasRef = useRef<HTMLCanvasElement>(null);
-    const isDragging = useRef(false);
-    const lastMouse = useRef({ x: 0, y: 0 });
-    const requestRef = useRef<number>(0);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
 
-    // Handle Mouse Events for Panning
-    const handleMouseDown = (e: React.MouseEvent) => {
-        if (!interactive || !onPan) return;
-        isDragging.current = true;
-        lastMouse.current = { x: e.clientX, y: e.clientY };
-    };
+  const handleMouseDown = (e: React.MouseEvent) => {
+    if (!interactive || !onPan) return;
+    setIsDragging(true);
+    setDragStart({ x: e.clientX, y: e.clientY });
+  };
 
-    const handleMouseMove = (e: React.MouseEvent) => {
-        if (!isDragging.current || !onPan) return;
-        const dx = e.clientX - lastMouse.current.x;
-        const dy = e.clientY - lastMouse.current.y;
-        onPan(dx, dy);
-        lastMouse.current = { x: e.clientX, y: e.clientY };
-    };
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (!isDragging || !onPan) return;
+    const dx = e.clientX - dragStart.x;
+    const dy = e.clientY - dragStart.y;
+    onPan(dx, dy);
+    setDragStart({ x: e.clientX, y: e.clientY });
+  };
 
-    const handleMouseUp = () => {
-        isDragging.current = false;
-    };
+  const handleMouseUp = () => setIsDragging(false);
 
-    useEffect(() => {
-        const canvas = canvasRef.current;
-        if (!canvas) return;
-        
-        const rect = canvas.getBoundingClientRect();
-        // Only update dimensions if they changed to avoid clearing canvas unnecessarily on re-render
-        if (canvas.width !== rect.width || canvas.height !== rect.height) {
-            canvas.width = rect.width;
-            canvas.height = rect.height;
+  const renderTile = (x: number, y: number) => {
+    let content = null;
+    let bgClass = "bg-black/20 border-white/5";
+    let iconClass = "text-white/20";
+
+    // Check for entity
+    const isUser = userPos && userPos.x === x && userPos.y === y;
+    const isChar = charPos && charPos.x === x && charPos.y === y;
+
+    if (mapData?.tiles) {
+      const tile = mapData.tiles.find(t => t.x === x && t.y === y);
+      if (tile) {
+        switch (tile.type) {
+          case 'wall':
+            content = <Box size={14} />;
+            bgClass = "bg-[color:var(--lain-cyan)]/20 border-[color:var(--lain-cyan)]/50";
+            iconClass = "text-[color:var(--lain-cyan)]";
+            break;
+          case 'floor':
+            // Empty usually
+            break;
+          case 'hazard':
+            content = <AlertTriangle size={14} />;
+            bgClass = "bg-red-500/20 border-red-500/50";
+            iconClass = "text-red-500 animate-pulse";
+            break;
+          case 'point_of_interest':
+          case 'loot':
+            content = <Gem size={14} />;
+            bgClass = "bg-yellow-500/20 border-yellow-500/50";
+            iconClass = "text-yellow-500";
+            break;
         }
+      }
+    } else if (mapData?.grid) {
+      // Legacy Fallback
+      const cell = mapData.grid[y]?.[x];
+      if (cell === '#') {
+        content = <Box size={14} />;
+        bgClass = "bg-gray-800 border-gray-600";
+      } else if (cell === 'E') {
+        content = <Skull size={14} />;
+        iconClass = "text-red-500";
+      }
+    }
 
-        const ctx = canvas.getContext('2d');
-        if (!ctx) return;
+    if (isUser) {
+      return (
+        <div key={`${x}-${y}`} className="relative w-full h-full flex items-center justify-center bg-blue-500/30 border border-blue-400 shadow-[0_0_10px_blue]">
+          <Target size={16} className="text-white animate-spin-slow" />
+          <div className="absolute -top-3 text-[8px] bg-blue-500 text-black px-1 font-bold">P1</div>
+        </div>
+      );
+    }
 
-        let time = 0;
-
-        const draw = () => {
-            time += 0.05;
-            
-            // Clear
-            ctx.fillStyle = '#050505';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-            if (mapData) {
-                const mapSize = 10; // 10x10 grid
-                // Base cell size to fit screen at zoom 1
-                const minDim = Math.min(canvas.width, canvas.height);
-                const baseCellSize = (minDim / (mapSize + 2)); 
-                const cellSize = baseCellSize * zoom;
-
-                // Center the map initially, then apply pan
-                const totalMapWidth = cellSize * mapSize;
-                const totalMapHeight = cellSize * mapSize;
-                
-                const startX = (canvas.width - totalMapWidth) / 2 + panOffset.x;
-                const startY = (canvas.height - totalMapHeight) / 2 + panOffset.y;
-
-                // Clipping for clean edges
-                ctx.save();
-                ctx.beginPath();
-                ctx.rect(0, 0, canvas.width, canvas.height);
-                ctx.clip();
-
-                // Draw Grid & Cells
-                mapData.grid.forEach((row, y) => {
-                    for (let x = 0; x < row.length; x++) {
-                        const cell = row[x];
-                        const posX = startX + x * cellSize;
-                        const posY = startY + y * cellSize;
-
-                        // Skip if offscreen
-                        if (posX < -cellSize || posY < -cellSize || posX > canvas.width || posY > canvas.height) continue;
-
-                        // --- CELL RENDERING ---
-                        
-                        // Default Floor
-                        ctx.fillStyle = 'rgba(0, 20, 10, 0.8)';
-                        ctx.strokeStyle = 'rgba(0, 255, 100, 0.15)';
-                        ctx.lineWidth = 1;
-
-                        if (cell === '#') {
-                            // WALL: 3D Block effect
-                            ctx.fillStyle = 'rgba(0, 60, 30, 0.9)';
-                            ctx.fillRect(posX, posY, cellSize, cellSize);
-                            
-                            // Inner bevel
-                            ctx.strokeStyle = 'rgba(0, 255, 100, 0.6)';
-                            ctx.strokeRect(posX + 2, posY + 2, cellSize - 4, cellSize - 4);
-                            
-                            // Crosshatch
-                            ctx.beginPath();
-                            ctx.moveTo(posX, posY); ctx.lineTo(posX + cellSize, posY + cellSize);
-                            ctx.stroke();
-                        } 
-                        else if (cell === '~') {
-                            // WATER: Animated waves
-                            ctx.fillStyle = 'rgba(0, 100, 255, 0.1)';
-                            ctx.fillRect(posX, posY, cellSize, cellSize);
-                            
-                            ctx.strokeStyle = 'rgba(0, 200, 255, 0.4)';
-                            ctx.beginPath();
-                            for(let i=0; i<cellSize; i+=5) {
-                                const waveY = posY + i + Math.sin(time + x + (i*0.1)) * 2;
-                                ctx.moveTo(posX, waveY);
-                                ctx.lineTo(posX + cellSize, waveY);
-                            }
-                            ctx.stroke();
-                        }
-                        else {
-                            // FLOOR: Grid dots
-                            ctx.fillStyle = 'rgba(0, 255, 100, 0.05)';
-                            ctx.fillRect(posX + 2, posY + 2, cellSize - 4, cellSize - 4);
-                            
-                            // Corner markers
-                            ctx.fillStyle = 'rgba(0, 255, 100, 0.4)';
-                            ctx.fillRect(posX, posY, 2, 2);
-                            ctx.fillRect(posX + cellSize - 2, posY, 2, 2);
-                            ctx.fillRect(posX, posY + cellSize - 2, 2, 2);
-                            ctx.fillRect(posX + cellSize - 2, posY + cellSize - 2, 2, 2);
-                        }
-
-                        // Grid Border
-                        ctx.strokeStyle = 'rgba(0, 255, 100, 0.1)';
-                        ctx.strokeRect(posX, posY, cellSize, cellSize);
-
-                        // Items / Points of Interest
-                        if (cell === '$') {
-                            // LOOT: Spinning Box
-                            ctx.save();
-                            ctx.translate(posX + cellSize/2, posY + cellSize/2);
-                            ctx.rotate(time);
-                            ctx.fillStyle = 'yellow';
-                            ctx.fillRect(-cellSize/6, -cellSize/6, cellSize/3, cellSize/3);
-                            ctx.shadowColor = 'yellow';
-                            ctx.shadowBlur = 10;
-                            ctx.strokeRect(-cellSize/4, -cellSize/4, cellSize/2, cellSize/2);
-                            ctx.restore();
-                        }
-                        if (cell === 'E') {
-                            // ENEMY: Pulsing Diamond
-                            const pulse = 1 + Math.sin(time * 5) * 0.2;
-                            ctx.save();
-                            ctx.translate(posX + cellSize/2, posY + cellSize/2);
-                            ctx.scale(pulse, pulse);
-                            ctx.fillStyle = 'rgba(255, 0, 0, 0.8)';
-                            ctx.beginPath();
-                            ctx.moveTo(0, -cellSize/3);
-                            ctx.lineTo(cellSize/3, 0);
-                            ctx.lineTo(0, cellSize/3);
-                            ctx.lineTo(-cellSize/3, 0);
-                            ctx.fill();
-                            // Glitch effect
-                            if (Math.random() > 0.95) {
-                                ctx.fillStyle = 'white';
-                                ctx.fillRect(-10, -5, 20, 2);
-                            }
-                            ctx.restore();
-                        }
-                    }
-                });
-
-                // Draw Entities
-                const drawEntity = (pos: {x:number, y:number}, color: string, label: string, isPlayer: boolean) => {
-                    const cx = startX + (pos.x + 0.5) * cellSize;
-                    const cy = startY + (pos.y + 0.5) * cellSize;
-                    
-                    if (isPlayer) {
-                        // Radar Cone
-                        ctx.save();
-                        ctx.translate(cx, cy);
-                        ctx.rotate(time * 2);
-                        ctx.fillStyle = 'rgba(0, 255, 100, 0.2)';
-                        ctx.beginPath();
-                        ctx.moveTo(0,0);
-                        ctx.arc(0, 0, cellSize, 0, Math.PI/4);
-                        ctx.fill();
-                        ctx.restore();
-                        
-                        // Player Marker
-                        ctx.fillStyle = 'white';
-                        ctx.shadowColor = 'white';
-                        ctx.shadowBlur = 10;
-                        ctx.beginPath();
-                        ctx.arc(cx, cy, cellSize/4, 0, Math.PI*2);
-                        ctx.fill();
-                        ctx.shadowBlur = 0;
-                    } else {
-                        // NPC Marker
-                        ctx.fillStyle = color;
-                        ctx.beginPath();
-                        ctx.arc(cx, cy, cellSize/4, 0, Math.PI*2);
-                        ctx.fill();
-                        ctx.strokeStyle = 'white';
-                        ctx.lineWidth = 1;
-                        ctx.stroke();
-                    }
-
-                    // Label
-                    ctx.fillStyle = 'white';
-                    ctx.font = `bold ${Math.max(10, cellSize/4)}px monospace`;
-                    ctx.textAlign = 'center';
-                    ctx.fillText(label, cx, cy - cellSize/2);
-                };
-
-                if (charPos) drawEntity(charPos, 'cyan', 'NPC', false);
-                if (userPos) drawEntity(userPos, 'white', 'P1', true);
-
-                ctx.restore();
-
-            } else {
-                // RENDER SCANNING RADAR (Fallback)
-                const cx = canvas.width / 2;
-                const cy = canvas.height / 2;
-                const rMax = Math.min(cx, cy) * 0.8;
-
-                // Grid (Green)
-                ctx.strokeStyle = 'rgba(0, 255, 100, 0.2)';
-                ctx.lineWidth = 1;
-                ctx.beginPath();
-                for(let r=20; r<rMax; r+=40) {
-                    ctx.moveTo(cx+r, cy);
-                    ctx.arc(cx, cy, r, 0, Math.PI*2);
-                }
-                ctx.stroke();
-
-                // Scanning Text
-                ctx.fillStyle = 'rgba(0, 255, 100, 0.8)';
-                ctx.font = '12px monospace';
-                ctx.fillText("SCANNING SECTOR...", 10, 20);
-
-                // Radar Sweep
-                ctx.save();
-                ctx.translate(cx, cy);
-                ctx.rotate(time);
-                
-                const grad = ctx.createLinearGradient(0, 0, rMax, 0);
-                grad.addColorStop(0, 'rgba(0, 255, 100, 0)');
-                grad.addColorStop(1, 'rgba(0, 255, 100, 0.5)');
-                
-                ctx.fillStyle = grad;
-                ctx.beginPath();
-                ctx.moveTo(0,0);
-                ctx.arc(0, 0, rMax, 0, 0.5);
-                ctx.lineTo(0,0);
-                ctx.fill();
-                ctx.restore();
-            }
-
-            requestRef.current = requestAnimationFrame(draw);
-        };
-        
-        // Initial call
-        requestRef.current = requestAnimationFrame(draw);
-        
-        return () => {
-            cancelAnimationFrame(requestRef.current);
-        };
-    }, [mapData, userPos, charPos, zoom, panOffset]);
+    if (isChar) {
+      return (
+        <div key={`${x}-${y}`} className="relative w-full h-full flex items-center justify-center bg-pink-500/30 border border-pink-400">
+          <Footprints size={16} className="text-pink-300" />
+        </div>
+      );
+    }
 
     return (
-        <div 
-            className={`relative bg-black overflow-hidden group ${className || 'w-full h-32 border-b border-[color:var(--lain-cyan)]/30'}`}
-            onMouseDown={interactive ? handleMouseDown : undefined}
-            onMouseMove={interactive ? handleMouseMove : undefined}
-            onMouseUp={interactive ? handleMouseUp : undefined}
-            onMouseLeave={interactive ? handleMouseUp : undefined}
-            style={{ cursor: interactive ? 'grab' : 'default' }}
-        >
-            <canvas ref={canvasRef} className="w-full h-full block" />
-            
-            {/* Scanlines overlay */}
-            <div className="absolute inset-0 bg-[linear-gradient(rgba(0,255,100,0.05)_1px,transparent_1px)] bg-[size:100%_2px] pointer-events-none"></div>
-            <div className="absolute inset-0 bg-radial-gradient(circle, transparent 60%, black 100%) pointer-events-none"></div>
-        </div>
+      <div key={`${x}-${y}`} className={`w-full h-full border flex items-center justify-center text-[10px] ${bgClass}`}>
+        <div className={iconClass}>{content}</div>
+      </div>
     );
+  };
+
+  const gridSize = 10;
+
+  return (
+    <div
+      ref={containerRef}
+      className={`relative bg-black overflow-hidden select-none ${className}`}
+      onMouseDown={handleMouseDown}
+      onMouseMove={handleMouseMove}
+      onMouseUp={handleMouseUp}
+      onMouseLeave={handleMouseUp}
+      style={{ cursor: interactive ? (isDragging ? 'grabbing' : 'grab') : 'default' }}
+    >
+      <div
+        className="absolute inset-0 flex items-center justify-center transition-transform duration-100 ease-out"
+        style={{
+          transform: `scale(${zoom}) translate(${panOffset.x}px, ${panOffset.y}px)`
+        }}
+      >
+        <div
+          className="grid gap-1 p-4 bg-black/80 border border-[color:var(--lain-cyan)]/30 shadow-[0_0_30px_rgba(0,240,255,0.1)]"
+          style={{
+            gridTemplateColumns: `repeat(${gridSize}, 40px)`,
+            gridTemplateRows: `repeat(${gridSize}, 40px)`
+          }}
+        >
+          {Array.from({ length: gridSize * gridSize }).map((_, i) => {
+            const x = i % gridSize;
+            const y = Math.floor(i / gridSize);
+            return renderTile(x, y);
+          })}
+        </div>
+      </div>
+
+      {/* HUD Overlay */}
+      <div className="absolute top-2 left-2 pointer-events-none">
+        <div className="flex items-center gap-2 text-[color:var(--lain-cyan)] text-xs font-mono">
+          <Hexagon size={14} className="animate-spin-slow" />
+          <span>SECTOR: {mapData?.biome || "UNKNOWN"}</span>
+        </div>
+      </div>
+    </div>
+  );
 };

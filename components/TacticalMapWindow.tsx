@@ -14,6 +14,7 @@ interface TacticalMapWindowProps {
   charPos?: { x: number, y: number };
   worldContext?: string;
   apiKey: string;
+  mapConfig?: any; // New prop for map-specific API
   onUpdateMap: (map: MapData) => void;
   onClose: () => void;
   isMinimized: boolean;
@@ -43,18 +44,34 @@ const Minimap: React.FC<{
 
     // Draw Map Points
     const cellSize = canvas.width / 10;
-    mapData.grid.forEach((row, y) => {
-      for (let x = 0; x < row.length; x++) {
-        const cell = row[x];
-        if (cell === '#') ctx.fillStyle = 'rgba(0, 255, 100, 0.5)';
-        else if (cell === '~') ctx.fillStyle = 'rgba(0, 100, 255, 0.5)';
-        else if (cell === '$') ctx.fillStyle = 'yellow';
-        else if (cell === 'E') ctx.fillStyle = 'red';
-        else ctx.fillStyle = 'rgba(50, 50, 50, 0.5)';
 
+    if (mapData.tiles) {
+      mapData.tiles.forEach(tile => {
+        const x = tile.x;
+        const y = tile.y;
+
+        switch (tile.type) {
+          case 'wall': ctx.fillStyle = 'rgba(0, 255, 100, 0.5)'; break;
+          case 'hazard': ctx.fillStyle = 'red'; break;
+          case 'point_of_interest': ctx.fillStyle = 'yellow'; break;
+          default: ctx.fillStyle = 'rgba(50, 50, 50, 0.5)';
+        }
         ctx.fillRect(x * cellSize, y * cellSize, cellSize - 1, cellSize - 1);
-      }
-    });
+      });
+    } else if (mapData.grid) {
+      mapData.grid.forEach((row, y) => {
+        for (let x = 0; x < row.length; x++) {
+          const cell = row[x];
+          if (cell === '#') ctx.fillStyle = 'rgba(0, 255, 100, 0.5)';
+          else if (cell === '~') ctx.fillStyle = 'rgba(0, 100, 255, 0.5)';
+          else if (cell === '$') ctx.fillStyle = 'yellow';
+          else if (cell === 'E') ctx.fillStyle = 'red';
+          else ctx.fillStyle = 'rgba(50, 50, 50, 0.5)';
+
+          ctx.fillRect(x * cellSize, y * cellSize, cellSize - 1, cellSize - 1);
+        }
+      });
+    }
 
     // Draw Player
     if (userPos) {
@@ -88,6 +105,7 @@ export const TacticalMapWindow: React.FC<TacticalMapWindowProps> = ({
   charPos,
   worldContext,
   apiKey,
+  mapConfig,
   onUpdateMap,
   onClose,
   isMinimized,
@@ -122,14 +140,15 @@ export const TacticalMapWindow: React.FC<TacticalMapWindowProps> = ({
   };
 
   const handleGenerate = async (prompt: string) => {
-    if (isGenerating || !apiKey) return;
+    if (isGenerating) return; // Allow if mapConfig is present even if apiKey is empty (fallback logic in worldEngine handled via config object)
     setIsGenerating(true);
     onSystemBusy?.(true);
     audio.playLoadTick();
 
     try {
       const context = prompt || worldContext || "A mysterious procedural dungeon";
-      const newMap = await generateMapData(context, apiKey);
+      const config = mapConfig || { apiKey: apiKey, source: 'google' };
+      const newMap = await generateMapData(context, config);
       if (newMap) {
         onUpdateMap(newMap);
         audio.playBootSound();

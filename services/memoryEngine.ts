@@ -1,0 +1,1 @@
+export { updateMemoryTable } from './geminiService'; 
