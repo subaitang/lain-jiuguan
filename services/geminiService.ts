@@ -48,15 +48,6 @@ const normalizeBaseUrl = (url: string) => {
     return normalized;
 };
 
-export const resolveApiConfig = (config: ApiSettings, variables?: Record<string, string>): ApiSettings => {
-    if (!variables || !config.apiKey) return config;
-    let key = config.apiKey;
-    Object.entries(variables).forEach(([varName, varValue]) => {
-        key = key.replace(new RegExp(`\\$\\{${varName}\\}`, 'g'), varValue);
-    });
-    return { ...config, apiKey: key };
-};
-
 /**
  * 核心请求处理器：兼容 Google 官方 SDK 和自定义 OpenAI 接口 (SillyTavern, etc.)
  */
@@ -254,8 +245,7 @@ export const generateLainResponse = async (
     }));
 
     try {
-        const resolvedConfig = resolveApiConfig(settings.api, settings.variables);
-        const response = await callModelApi(resolvedConfig, {
+        const response = await callModelApi(settings.api, {
             systemInstruction,
             contents: chatHistory,
             temperature: settings.generation.temperature,

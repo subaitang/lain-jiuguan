@@ -1,4 +1,3 @@
-import { resolveApiConfig } from '@/services/geminiService';
 import { Play, RefreshCw } from 'lucide-react';
 import React, { useState } from 'react';
 import { audio } from '../services/audioEngine';
@@ -33,7 +32,7 @@ export const TacticalMapWindow: React.FC<TacticalMapWindowProps> = ({
   const [selectedNode, setSelectedNode] = useState<MapNode | null>(null);
 
   const handleGenerate = async (prompt: string) => {
-    const config = resolveApiConfig(settings.mapsApi || settings.api, settings.variables);
+    const config = settings.mapsApi || settings.api;
     if (isGenerating) return;
     setIsGenerating(true);
     onSystemBusy?.(true);
