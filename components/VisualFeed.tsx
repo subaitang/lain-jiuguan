@@ -193,7 +193,7 @@ export const VisualFeed: React.FC<VisualFeedProps> = ({ activePersona, messages,
             setLoadingMsg("OPTIMIZING IMAGE...");
             try {
                 let finalResult: string;
-                if (file.type.startsWith('video/')) {
+                if (file.type.startsWith('video/') || file.type === 'image/gif') {
                     const reader = new FileReader();
                     finalResult = await new Promise((res) => {
                         reader.onloadend = () => res(reader.result as string);
