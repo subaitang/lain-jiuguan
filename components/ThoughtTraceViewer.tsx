@@ -23,6 +23,21 @@ export const ThoughtTraceViewer: React.FC<ThoughtTraceViewerProps> = ({
 }) => {
     const [activeTab, setActiveTab] = useState<'main' | 'var' | 'role'>('var');
 
+    let parsedMetadata: any = null;
+    let variableReasoning: string | undefined = undefined;
+    
+    try {
+        if (message.metadataRaw) {
+            parsedMetadata = JSON.parse(message.metadataRaw);
+            if (parsedMetadata.variableReasoning) {
+                variableReasoning = parsedMetadata.variableReasoning;
+                delete parsedMetadata.variableReasoning; // Remove from raw view to avoid duplication
+            }
+        }
+    } catch (e) {
+        // failed to parse
+    }
+
     return (
         <NaviWindow
             title={`THOUGHT TRACE // PID:${message.id.substring(0,6)}`}
@@ -67,17 +82,32 @@ export const ThoughtTraceViewer: React.FC<ThoughtTraceViewerProps> = ({
                     <div className="absolute inset-0 bg-black/80 pointer-events-none"></div>
                     <div className="relative z-10">
                         {activeTab === 'var' && (
-                            <div className="space-y-2">
-                                <div className="text-[10px] opacity-50 tracking-widest mb-2 uppercase">Variable Metadata (JSON)</div>
-                                {message.metadataRaw ? (
-                                    <pre className="text-xs font-mono text-green-400 bg-black/50 p-4 border border-green-500/30 whitespace-pre-wrap">
-                                        {message.metadataRaw}
-                                    </pre>
-                                ) : (
-                                    <div className="text-xs opacity-50 italic p-4 border border-dashed border-[color:var(--lain-cyan)]/30">
-                                        No metadata variables captured for this response.
+                            <div className="space-y-4">
+                                {variableReasoning && (
+                                    <div className="space-y-1">
+                                        <div className="text-[10px] opacity-50 tracking-widest uppercase text-blue-400">Variable Logic Chain</div>
+                                        <div className="text-xs font-serif text-blue-100/80 bg-blue-900/10 p-3 border-l-2 border-blue-500 whitespace-pre-wrap">
+                                            {variableReasoning}
+                                        </div>
                                     </div>
                                 )}
+                                
+                                <div className="space-y-1">
+                                    <div className="text-[10px] opacity-50 tracking-widest uppercase">State Updates (JSON)</div>
+                                    {parsedMetadata ? (
+                                        <pre className="text-xs font-mono text-green-400 bg-black/50 p-4 border border-green-500/30 whitespace-pre-wrap overflow-x-auto">
+                                            {JSON.stringify(parsedMetadata, null, 2)}
+                                        </pre>
+                                    ) : message.metadataRaw ? (
+                                        <pre className="text-xs font-mono text-green-400 bg-black/50 p-4 border border-green-500/30 whitespace-pre-wrap overflow-x-auto">
+                                            {message.metadataRaw}
+                                        </pre>
+                                    ) : (
+                                        <div className="text-xs opacity-50 italic p-4 border border-dashed border-[color:var(--lain-cyan)]/30">
+                                            No metadata variables captured for this response.
+                                        </div>
+                                    )}
+                                </div>
                             </div>
                         )}
 

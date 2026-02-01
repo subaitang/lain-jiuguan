@@ -95,7 +95,7 @@ export const SettingsWindow: React.FC<SettingsWindowProps> = ({
     | "audio"
   >("gen");
   const [apiLayer, setApiLayer] = useState<
-    "generation" | "translation" | "memory" | "persona" | "maps"
+    "generation" | "translation" | "memory" | "persona" | "maps" | "variable"
   >("generation");
 
   const { language } = settings.user;
@@ -696,6 +696,19 @@ export const SettingsWindow: React.FC<SettingsWindowProps> = ({
         ...settings,
         mapsApi: {
           ...(settings.mapsApi || {
+            source: "google",
+            apiKey: "",
+            baseUrl: "",
+            modelName: "",
+          }),
+          ...u,
+        },
+      });
+    else if (apiLayer === "variable")
+      onUpdateSettings({
+        ...settings,
+        variableApi: {
+          ...(settings.variableApi || {
             source: "google",
             apiKey: "",
             baseUrl: "",
@@ -1743,6 +1756,12 @@ export const SettingsWindow: React.FC<SettingsWindowProps> = ({
                     className={`px-4 py-2 text-xs font-bold tracking-wider border-b-2 transition-all shrink-0 ${apiLayer === "maps" ? "border-[color:var(--lain-cyan)] text-[color:var(--lain-cyan)]" : "border-transparent opacity-50 hover:opacity-100"}`}
                   >
                     MAPS
+                  </button>
+                  <button
+                    onClick={() => setApiLayer("variable")}
+                    className={`px-4 py-2 text-xs font-bold tracking-wider border-b-2 transition-all shrink-0 ${apiLayer === "variable" ? "border-[color:var(--lain-cyan)] text-[color:var(--lain-cyan)]" : "border-transparent opacity-50 hover:opacity-100"}`}
+                  >
+                    VARIABLES
                   </button>
                 </div>
                 <div className="space-y-4">
