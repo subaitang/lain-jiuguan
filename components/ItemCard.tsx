@@ -49,4 +49,5 @@ export const ItemCard: React.FC<ItemCardProps> = ({ item, onClose, position, isT
                 </div>  
             </div>  
         </div>  
-    );  
+    );
+};  
