@@ -56,10 +56,11 @@ export interface PersonaSettings {
   exampleDialogue?: string;
   useRandomOpening?: boolean;
   customOpening?: string;
-  ipAddress?: string;
-  visualImage?: string;
-  birthday?: string;
-  // New fields for SillyTavern/AIRP style cards
+    ipAddress?: string;
+    visualImage?: string;
+    visualPosition?: string; // NEW: CSS object-position
+    birthday?: string;
+    // New fields for SillyTavern/AIRP style cards
   personality?: string;
   likes?: string;
   dislikes?: string;
