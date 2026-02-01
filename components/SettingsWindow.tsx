@@ -1577,6 +1577,20 @@ export const SettingsWindow: React.FC<SettingsWindowProps> = ({
                   <label className="block text-xs font-bold tracking-widest opacity-80 uppercase">
                     {t("lbl_mode", language)}
                   </label>
+                  
+                  <div className="flex items-center justify-between border border-[color:var(--lain-cyan)]/30 p-2 mb-2 bg-[color:var(--lain-cyan)]/5">
+                      <span className="text-[10px] uppercase font-bold tracking-wider">Force JSON State Sync (High Logic Cost)</span>
+                      <input
+                          type="checkbox"
+                          checked={settings.generation.forceJson ?? false}
+                          onChange={(e) => onUpdateSettings({
+                              ...settings,
+                              generation: { ...settings.generation, forceJson: e.target.checked }
+                          })}
+                          className="accent-[color:var(--lain-cyan)]"
+                      />
+                  </div>
+
                   <div className="flex border border-[color:var(--lain-cyan)]/30 bg-black p-1 win98-bevel-pressed">
                     <button
                       onClick={() =>
@@ -1913,6 +1927,24 @@ export const SettingsWindow: React.FC<SettingsWindowProps> = ({
                   </h3>
 
                   <div className="grid grid-cols-2 gap-6">
+                    <div className="space-y-2">
+                        <label className="text-xs font-bold tracking-widest opacity-70 uppercase">
+                            Interface Font
+                        </label>
+                        <select
+                            value={settings.ui.fontFamily || 'VT323'}
+                            onChange={(e) => onUpdateSettings({
+                                ...settings,
+                                ui: { ...settings.ui, fontFamily: e.target.value }
+                            })}
+                            className="w-full bg-black border border-[color:var(--lain-cyan)]/50 p-2 text-xs focus:border-[color:var(--lain-cyan)]"
+                        >
+                            <option value="VT323">Pixel (VT323)</option>
+                            <option value="Share Tech Mono">Cyber (Share Tech Mono)</option>
+                            <option value="Courier Prime">Retro (Courier)</option>
+                            <option value="Inter">Clean (Inter)</option>
+                        </select>
+                    </div>
                     <div className="space-y-2">
                       <label className="text-xs font-bold tracking-widest opacity-70 uppercase">
                         {t("set_app_bg", language)}

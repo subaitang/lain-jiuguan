@@ -196,6 +196,7 @@ export interface AppSettings {
     chatMode: "msg" | "rp";
     rpPerspective?: "1st" | "2nd" | "3rd" | "DM";
     rpInnerMonologue?: boolean;
+    forceJson?: boolean; // NEW: Enforce State Engine execution
     thinking?: { enabled: boolean; budget: number };
     logitBias?: Record<string, number>;
   };
@@ -246,6 +247,7 @@ export interface AppSettings {
     visualAssets?: VisualAsset[];
     visualMode?: "static" | "cycle" | "context";
     visualCycleInterval?: number; // in seconds
+    fontFamily?: string; // NEW: Custom Font
   };
   // NEW: Music Player Settings
   music?: {
@@ -288,6 +290,15 @@ export interface RPStats {
   statusEffects?: string[];
   limitGauge?: number; // 0-100
   traits?: string[];
+  quests?: Quest[]; // NEW: Quest tracking
+}
+
+export interface Quest {
+  id: string;
+  title: string;
+  description: string;
+  status: "active" | "completed" | "failed";
+  objectives: { id: string; text: string; completed: boolean }[];
 }
 
 export interface RPDate {
@@ -387,7 +398,8 @@ export enum WindowType {
   THOUGHT_TRACE = "THOUGHT_TRACE",
   MAP = "MAP",
   MUSIC = "MUSIC",
-  COMBAT = "COMBAT", // NEW
+  QUESTS = "QUESTS", // NEW
+  COMBAT = "COMBAT",
 }
 
 export interface WeatherData {

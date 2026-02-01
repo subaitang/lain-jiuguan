@@ -27,6 +27,7 @@ export const calculateStatusUpdate = async (
             mp: currentStats.mp,
             gold: currentStats.gold,
             inventory: currentStats.inventory,
+            quests: currentStats.quests || [],
             location: worldContext || "Unknown",
             status: currentStats.statusEffects || []
         }, null, 2);
@@ -42,18 +43,22 @@ ${recentChat}
 
 [INSTRUCTIONS]
 1. Analyze the interaction for physical damage, item usage, loot acquisition, gold transaction, or location changes.
-2. Think step-by-step about WHY a change occurred (Chain of Thought).
-3. Output a JSON object containing your reasoning and the variable updates.
+2. Check for NEW quests started or EXISTING quests updated (completed/failed/objectives).
+3. Think step-by-step about WHY a change occurred (Chain of Thought).
+4. Output a JSON object containing your reasoning and the variable updates.
 
 [OUTPUT FORMAT]
 Response must be a SINGLE valid JSON object:
 {
-  "reasoning": "User drank a potion, so HP should increase...",
+  "reasoning": "User accepted the village elder's request...",
   "deltas": {
     "hp": { "current": 15, "max": 20 },
     "gold": 90,
     "inventory": ["Sword", "Shield"], // Return FULL inventory list if changed
-    "statusEffects": ["Energized"]
+    "statusEffects": ["Energized"],
+    "quests": [
+       { "id": "q1", "title": "Rat Problem", "description": "Kill 5 rats", "status": "active", "objectives": [{ "id": "o1", "text": "Kill rats", "completed": false }] }
+    ] // Return FULL quest list if changed
   },
   "suggestedEvents": ["Nearby explosion heard"] // Optional environmental cues
 }
