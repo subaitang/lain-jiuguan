@@ -659,9 +659,9 @@ export const SettingsWindow: React.FC<SettingsWindowProps> = ({
           modelName: "",
         }
       );
-    if (apiLayer === "variables")
+    if (apiLayer === "variable")
       return (
-        settings.variablesApi || {
+        settings.variableApi || {
           source: "google",
           apiKey: "",
           baseUrl: "",
@@ -696,19 +696,6 @@ export const SettingsWindow: React.FC<SettingsWindowProps> = ({
         ...settings,
         mapsApi: {
           ...(settings.mapsApi || {
-            source: "google",
-            apiKey: "",
-            baseUrl: "",
-            modelName: "",
-          }),
-          ...u,
-        },
-      });
-    else if (apiLayer === "variables")
-      onUpdateSettings({
-        ...settings,
-        variablesApi: {
-          ...(settings.variablesApi || {
             source: "google",
             apiKey: "",
             baseUrl: "",
@@ -1756,12 +1743,6 @@ export const SettingsWindow: React.FC<SettingsWindowProps> = ({
                     className={`px-4 py-2 text-xs font-bold tracking-wider border-b-2 transition-all shrink-0 ${apiLayer === "maps" ? "border-[color:var(--lain-cyan)] text-[color:var(--lain-cyan)]" : "border-transparent opacity-50 hover:opacity-100"}`}
                   >
                     MAPS
-                  </button>
-                  <button
-                    onClick={() => setApiLayer("variables")}
-                    className={`px-4 py-2 text-xs font-bold tracking-wider border-b-2 transition-all shrink-0 ${apiLayer === "variables" ? "border-[color:var(--lain-cyan)] text-[color:var(--lain-cyan)]" : "border-transparent opacity-50 hover:opacity-100"}`}
-                  >
-                    VARIABLES
                   </button>
                 </div>
                 <div className="space-y-4">

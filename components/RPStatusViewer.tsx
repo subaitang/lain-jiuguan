@@ -1,4 +1,3 @@
-import { generateItemDetails } from "@/services/variableEngine";
 import {
   Activity,
   Backpack,
@@ -17,9 +16,9 @@ import {
   Target,
   User,
   Users,
-  X,
   Zap,
 } from "lucide-react";
+import { ItemCard } from "./ItemCard";
 import React, { useEffect, useRef, useState } from "react";
 import { audio } from "../services/audioEngine";
 import {
@@ -98,12 +97,15 @@ export const RPStatusViewer: React.FC<RPStatusViewerProps> = ({
   const [selectedNpcId, setSelectedNpcId] = useState<string>("active");
   const [isEditing, setIsEditing] = useState(false);
   const [tempStats, setTempStats] = useState<RPStats | null>(null);
+  const [hoveredItem, setHoveredItem] = useState<{
+    name: string;
+    rect: DOMRect;
+  } | null>(null);
+  const [selectedItem, setSelectedItem] = useState<string | null>(null);
 
   // Generation states
   const [isGenerating, setIsGenerating] = useState(false);
   const [keyword, setKeyword] = useState("");
-  const [inspectingItem, setInspectingItem] = useState<string | null>(null);
-  const [itemDetails, setItemDetails] = useState<any>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
 
   // Determine which stats to show based on tab and selection
@@ -123,6 +125,12 @@ export const RPStatusViewer: React.FC<RPStatusViewerProps> = ({
   const lang = settings.user.language;
   const targetLangName =
     lang === "zh" ? "Chinese" : lang === "jp" ? "Japanese" : "English";
+
+  const handleItemEnter = (e: React.MouseEvent, item: string) => {
+    const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+    setHoveredItem({ name: item, rect });
+  };
+  const handleItemLeave = () => setHoveredItem(null);
 
   useEffect(() => {
     if (isEditing) setTempStats(currentStats);
@@ -163,18 +171,6 @@ export const RPStatusViewer: React.FC<RPStatusViewerProps> = ({
     return settings.personaConfig && settings.personaConfig.apiKey
       ? settings.personaConfig
       : settings.api;
-  };
-
-  const handleInspectItem = async (item: string) => {
-    setInspectingItem(item);
-    setItemDetails(null);
-    audio.playClickSound();
-    const details = await generateItemDetails(
-      item,
-      `${currentStats.class} in ${settings.user.region || "World"}`,
-      getApiConfig(),
-    );
-    setItemDetails(details);
   };
 
   // --- GENERATION HANDLERS ---
@@ -642,14 +638,15 @@ export const RPStatusViewer: React.FC<RPStatusViewerProps> = ({
                 <div className="flex flex-wrap gap-2">
                   {(currentStats.equipment || []).length > 0 ? (
                     currentStats.equipment.map((item, i) => (
-                      <button
+                      <span
                         key={i}
-                        onClick={() => handleInspectItem(item)}
-                        className="text-[10px] px-2 py-1 bg-blue-900/30 border border-blue-500/50 text-blue-200 rounded hover:bg-blue-900/50 transition-colors cursor-help hover:scale-105 transform duration-100"
-                        title="Click to Inspect"
+                        className="text-[10px] px-2 py-1 bg-blue-900/30 border border-blue-500/50 text-blue-200 rounded hover:bg-blue-900/50 transition-colors cursor-help"
+                        onMouseEnter={(e) => handleItemEnter(e, item)}
+                        onMouseLeave={handleItemLeave}
+                        onClick={() => setSelectedItem(item)}
                       >
                         {item}
-                      </button>
+                      </span>
                     ))
                   ) : (
                     <span className="text-[10px] opacity-40 italic">
@@ -684,14 +681,15 @@ export const RPStatusViewer: React.FC<RPStatusViewerProps> = ({
                 <div className="flex flex-wrap gap-2">
                   {(currentStats.inventory || []).length > 0 ? (
                     currentStats.inventory.map((item, i) => (
-                      <button
+                      <span
                         key={i}
-                        onClick={() => handleInspectItem(item)}
-                        className="text-[10px] px-2 py-1 bg-[color:var(--lain-cyan)]/10 border border-[color:var(--lain-cyan)]/30 text-[color:var(--lain-cyan)] rounded hover:bg-[color:var(--lain-cyan)]/20 transition-colors cursor-help hover:scale-105 transform duration-100"
-                        title="Click to Inspect"
+                        className="text-[10px] px-2 py-1 bg-[color:var(--lain-cyan)]/10 border border-[color:var(--lain-cyan)]/30 text-[color:var(--lain-cyan)] rounded hover:bg-[color:var(--lain-cyan)]/20 transition-colors cursor-help"
+                        onMouseEnter={(e) => handleItemEnter(e, item)}
+                        onMouseLeave={handleItemLeave}
+                        onClick={() => setSelectedItem(item)}
                       >
                         {item}
-                      </button>
+                      </span>
                     ))
                   ) : (
                     <span className="text-[10px] opacity-40 italic">
@@ -743,68 +741,21 @@ export const RPStatusViewer: React.FC<RPStatusViewerProps> = ({
             </div>
           </div>
         </div>
-        {/* Item Detail Modal */}
-        {inspectingItem && (
-          <div
-            className="absolute inset-0 bg-black/80 flex items-center justify-center z-50 backdrop-blur-sm animate-in fade-in duration-200"
-            onClick={() => setInspectingItem(null)}
-          >
-            <div
-              className="bg-black border border-[color:var(--lain-cyan)] w-80 p-4 relative shadow-[0_0_20px_var(--lain-cyan)]"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <button
-                onClick={() => setInspectingItem(null)}
-                className="absolute top-2 right-2 text-red-500 hover:text-white"
-              >
-                <X size={14} />
-              </button>
-              <h3 className="font-bold text-lg text-[color:var(--lain-cyan)] border-b border-[color:var(--lain-cyan)]/30 pb-2 mb-2">
-                {inspectingItem}
-              </h3>
-              {itemDetails ? (
-                <div className="space-y-2 text-xs font-mono">
-                  <div className="flex justify-between">
-                    <span className="opacity-50">TYPE:</span>
-                    <span className="font-bold text-white">
-                      {itemDetails.type}
-                    </span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="opacity-50">RARITY:</span>
-                    <span
-                      className={`font-bold ${itemDetails.rarity === "Legendary" ? "text-yellow-400" : itemDetails.rarity === "Epic" ? "text-purple-400" : "text-white"}`}
-                    >
-                      {itemDetails.rarity}
-                    </span>
-                  </div>
-                  <div className="p-2 bg-[color:var(--lain-cyan)]/10 border border-[color:var(--lain-cyan)]/20 italic opacity-80 my-2">
-                    "{itemDetails.description}"
-                  </div>
-                  <div className="space-y-1">
-                    <div className="opacity-50">EFFECTS:</div>
-                    {itemDetails.effects.map((eff: string, i: number) => (
-                      <div
-                        key={i}
-                        className="pl-2 border-l-2 border-green-500 text-green-300"
-                      >
-                        {eff}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              ) : (
-                <div className="flex flex-col items-center py-8 opacity-50 animate-pulse">
-                  <Loader2 size={24} className="animate-spin mb-2" />
-                  <span className="text-[10px] tracking-widest">
-                    ANALYZING STRUCTURE...
-                  </span>
-                </div>
-              )}
-            </div>
-          </div>
-        )}
       </div>
+      {hoveredItem && (
+        <ItemCard 
+            item={hoveredItem.name} 
+            onClose={() => {}} 
+            position={{ x: hoveredItem.rect.left, y: hoveredItem.rect.bottom }} 
+            isTooltip={true} 
+        />
+      )}
+      {selectedItem && (
+        <ItemCard 
+            item={selectedItem} 
+            onClose={() => setSelectedItem(null)} 
+        />
+      )}
     </NaviWindow>
   );
 };

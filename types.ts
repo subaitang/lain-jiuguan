@@ -221,8 +221,8 @@ export interface AppSettings {
   translation?: ApiSettings;
   memoryApi?: ApiSettings;
   personaConfig?: ApiSettings;
-  mapsApi?: ApiSettings;
-  variablesApi?: ApiSettings; // NEW: Dedicated Variables API
+  mapsApi?: ApiSettings; // NEW: Dedicated Map API
+  variableApi?: ApiSettings; // NEW: Dedicated Variable API
   sound: {
     enabled: boolean;
     volume: number;
@@ -331,16 +331,17 @@ export interface MemoryLayers {
 }
 
 export interface CombatState {
-  isActive: boolean;
+  active: boolean;
   turn: number;
-  log: string[];
-  enemies: {
+  participants: {
     id: string;
     name: string;
-    hp: { current: number; max: number };
-    status: string[];
-    action?: string;
+    hp: number;
+    maxHp: number;
+    isPlayer: boolean;
+    initiative: number;
   }[];
+  log: string[];
 }
 
 export interface ChatSession {
@@ -365,7 +366,7 @@ export interface ChatSession {
   charRPStats?: RPStats;
   rpWorldContext?: string;
   mapData?: MapData;
-  combat?: CombatState;
+  combatState?: CombatState; // NEW: Combat System
   userPos?: { x: number; y: number };
   charPos?: { x: number; y: number };
   npcRegistry?: Record<string, RPStats>;
@@ -384,7 +385,8 @@ export enum WindowType {
   WORLD_NEWS = "WORLD_NEWS",
   THOUGHT_TRACE = "THOUGHT_TRACE",
   MAP = "MAP",
-  MUSIC = "MUSIC", // NEW
+  MUSIC = "MUSIC",
+  COMBAT = "COMBAT", // NEW
 }
 
 export interface WeatherData {

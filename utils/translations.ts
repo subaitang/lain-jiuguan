@@ -1,4 +1,3 @@
-
 import { Language } from "../types";
 
 const translations = {
@@ -18,7 +17,7 @@ const translations = {
     login_btn: "CONNECT",
     login_upload: "UPLOAD IMG",
     login_region_placeholder: "e.g. Japan/Tokyo",
-    
+
     // UI General
     nav_protocol: "PROTOCOL",
     nav_nodes: "NODES",
@@ -45,7 +44,7 @@ const translations = {
     ui_abort: "ABORT",
     ui_loading: "LOADING...",
     ui_sync: "SYNCING...",
-    
+
     // Weather
     wea_title: "WEATHER_STATION",
     wea_loading: "POLLING SATELLITE...",
@@ -209,12 +208,14 @@ const translations = {
     set_trans_layer: "TRANSLATION LAYER",
     set_mem_layer: "MEMORY LAYER",
     set_persona_layer: "PERSONA LAYER",
+    set_map_layer: "MAPS API",
+    set_var_layer: "VARIABLES API",
     set_test_conn: "TEST CONNECTION",
     set_connecting: "CONNECTING...",
     lbl_trans_mode: "TRANSLATION MODE",
     opt_trans_literal: "LITERAL (ROBOTIC)",
     opt_trans_interpretive: "INTERPRETIVE (AI)",
-    
+
     // User Settings
     lbl_identity: "IDENTITY_STRING",
     lbl_biodata: "BIO_DATA",
@@ -249,11 +250,11 @@ const translations = {
     lbl_emoji_prot: "Emoji_Protocols",
     lbl_emoji_desc: "Toggle visual glyph expression",
     lbl_author_notes: "Internal Notes (Author Only)",
-    
+
     // Group Settings
     lbl_groups: "GROUPS",
     lbl_members: "MEMBERS",
-    
+
     // Audio / UI Settings
     set_chat_bg: "Chat Window Background",
     set_app_bg: "App Background (Global)",
@@ -276,7 +277,7 @@ const translations = {
     set_wipe_mem: "WIPE MEMORY",
     set_import: "IMPORT SESSION",
     set_saved_sess: "SAVED SESSIONS",
-    
+
     // Actions
     btn_save: "APPLY CHANGES",
     btn_reset: "RESET DEFAULTS",
@@ -286,12 +287,12 @@ const translations = {
     btn_cancel: "CANCEL",
     btn_post: "POST UPDATE",
     btn_share_profile: "SHARE PROFILE",
-    
+
     // Status
     status_conn: "NET:",
     status_audio: "AUDIO:",
     settings_title: "NAVI CONFIGURATION",
-    
+
     // Clock/Cal
     cal_morning: "MORNING",
     cal_afternoon: "NOON",
@@ -306,7 +307,7 @@ const translations = {
     cal_select_year: "YEAR",
     cal_select_month: "MONTH",
     cal_jump: "JUMP",
-    
+
     // Profile
     prof_title: "DATA_FILE",
     prof_banner: "BANNER",
@@ -366,6 +367,8 @@ const translations = {
     map_gen: "GENERATE",
     map_regen: "REGENERATE FROM WORLD CONTEXT",
     map_mapping: "MAPPING SECTOR...",
+    map_nodes: "NODES DETECTED",
+    map_sector: "SECTOR CONTROL",
 
     // Memory
     mem_l1: "LAYER 1 (RAW)",
@@ -418,7 +421,7 @@ const translations = {
     login_btn: "连接",
     login_upload: "上传图像",
     login_region_placeholder: "例：中国/上海",
-    
+
     nav_protocol: "通讯协议",
     nav_nodes: "节点列表",
     nav_visual: "视觉层",
@@ -544,7 +547,7 @@ const translations = {
     sys_reboot: "重启系统",
     sys_disconnect: "断开连接",
     sys_hard_reset: "数据清空",
-    
+
     tab_gen: "生成设置",
     tab_api: "连接配置",
     tab_modules: "模块管理",
@@ -598,12 +601,14 @@ const translations = {
     set_trans_layer: "翻译层",
     set_mem_layer: "记忆层",
     set_persona_layer: "人格生成层",
+    set_map_layer: "地图接口",
+    set_var_layer: "变量接口",
     set_test_conn: "测试连接",
     set_connecting: "连接中...",
     lbl_trans_mode: "翻译模式",
     opt_trans_literal: "直译 (机械)",
     opt_trans_interpretive: "意译 (AI润色)",
-    
+
     lbl_identity: "身份字符串",
     lbl_biodata: "生物数据",
     lbl_visual_scale: "视觉缩放",
@@ -660,7 +665,7 @@ const translations = {
     set_wipe_mem: "清空记忆",
     set_import: "导入会话",
     set_saved_sess: "已保存会话",
-    
+
     btn_save: "应用更改",
     btn_reset: "重置默认",
     btn_export: "导出聊天",
@@ -687,7 +692,7 @@ const translations = {
     cal_select_year: "年份",
     cal_select_month: "月份",
     cal_jump: "跳转",
-    
+
     prof_title: "数据档案",
     prof_banner: "横幅",
     prof_region: "区域",
@@ -742,6 +747,8 @@ const translations = {
     map_gen: "生成",
     map_regen: "从世界设定重生成",
     map_mapping: "正在测绘...",
+    map_nodes: "侦测节点",
+    map_sector: "区域控制",
 
     mem_l1: "第一层 (原始数据)",
     mem_l2: "第二层 (情景记忆)",
@@ -790,7 +797,7 @@ const translations = {
     login_btn: "接続",
     login_upload: "画像アップロード",
     login_region_placeholder: "例：日本/東京",
-    
+
     nav_protocol: "プロトコル",
     nav_nodes: "ノード",
     nav_visual: "ビジュアル",
@@ -916,7 +923,7 @@ const translations = {
     sys_reboot: "再起動",
     sys_disconnect: "切断",
     sys_hard_reset: "初期化",
-    
+
     tab_gen: "生成設定",
     tab_api: "接続設定",
     tab_modules: "モジュール",
@@ -970,12 +977,14 @@ const translations = {
     set_trans_layer: "翻訳レイヤー",
     set_mem_layer: "メモリ層",
     set_persona_layer: "ペルソナ層",
+    set_map_layer: "マップAPI",
+    set_var_layer: "変数API",
     set_test_conn: "接続テスト",
     set_connecting: "接続中...",
     lbl_trans_mode: "翻訳モード",
     opt_trans_literal: "直訳 (機械)",
     opt_trans_interpretive: "意訳 (AI)",
-    
+
     lbl_identity: "IDストリング",
     lbl_biodata: "バイオデータ",
     lbl_visual_scale: "スケール",
@@ -1008,7 +1017,7 @@ const translations = {
     lbl_emoji_prot: "絵文字プロトコル",
     lbl_emoji_desc: "視覚的表現の切り替え",
     lbl_author_notes: "内部メモ",
-    
+
     lbl_groups: "グループ",
     lbl_members: "メンバー",
 
@@ -1032,7 +1041,7 @@ const translations = {
     set_wipe_mem: "メモリ消去",
     set_import: "セッションインポート",
     set_saved_sess: "保存済みセッション",
-    
+
     btn_save: "適用",
     btn_reset: "リセット",
     btn_export: "チャット出力",
@@ -1045,7 +1054,7 @@ const translations = {
     status_conn: "ネット:",
     status_audio: "音声:",
     settings_title: "NAVI 設定",
-    
+
     cal_morning: "朝",
     cal_afternoon: "昼",
     cal_evening: "夕",
@@ -1059,7 +1068,7 @@ const translations = {
     cal_select_year: "年",
     cal_select_month: "月",
     cal_jump: "移動",
-    
+
     prof_title: "データファイル",
     prof_banner: "バナー",
     prof_region: "地域",
@@ -1114,6 +1123,8 @@ const translations = {
     map_gen: "生成",
     map_regen: "世界設定から再生成",
     map_mapping: "セクター測量中...",
+    map_nodes: "検出ノード",
+    map_sector: "セクター制御",
 
     mem_l1: "第一層 (生データ)",
     mem_l2: "第二層 (エピソード記憶)",
@@ -1146,9 +1157,12 @@ const translations = {
     mus_switch_mode: "モード切替",
     mus_upload: "ファイルをアップロード",
     mus_search_ph: "タイトル、アーティスト、URL...",
-  }
+  },
 };
 
-export const t = (key: keyof typeof translations['en'], lang: Language): string => {
-  return translations[lang][key] || translations['en'][key] || key;
+export const t = (
+  key: keyof (typeof translations)["en"],
+  lang: Language,
+): string => {
+  return translations[lang][key] || translations["en"][key] || key;
 };
