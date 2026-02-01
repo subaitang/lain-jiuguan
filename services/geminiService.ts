@@ -199,7 +199,20 @@ Numeric values must be integers. NO markdown. NO conversation.`;
         return JSON.parse(rawJson);
     } catch(e) { 
         console.error("Stats Gen Failed", e);
-        return null; 
+        return {
+            name: "Unknown",
+            level: 1,
+            hp: { current: 10, max: 10 },
+            mp: { current: 10, max: 10 },
+            xp: 0,
+            maxXp: 100,
+            attributes: { STR: 10, DEX: 10, CON: 10, INT: 10, WIS: 10, CHA: 10 },
+            inventory: [],
+            equipment: [],
+            skills: [],
+            gold: 0,
+            class: "Commoner"
+        };
     }
 };
 
