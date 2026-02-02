@@ -86,7 +86,7 @@ export const NaviWindow: React.FC<NaviWindowProps> = ({
             >
                 <div className="flex items-center gap-2 z-10 bg-black/80 px-3 py-0.5 border-r border-[color:var(--lain-cyan)]/50 backdrop-blur-sm">
                    <Hexagon size={14} className="fill-[color:var(--lain-cyan)]/20 text-[color:var(--lain-cyan)]" />
-                   <h2 className="text-xs font-['Share_Tech_Mono'] font-bold text-[color:var(--lain-cyan)] tracking-[0.2em] uppercase text-glow">
+                   <h2 className="text-xs font-bold text-[color:var(--lain-cyan)] tracking-[0.2em] uppercase text-glow">
                        {title}
                    </h2>
                 </div>

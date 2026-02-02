@@ -278,8 +278,8 @@ export interface RPStats {
   hp: { current: number; max: number };
   mp: { current: number; max: number };
   attributes: RPAttributes;
-  inventory: string[];
-  equipment: string[];
+  inventory: Item[];
+  equipment: Item[];
   gender?: string;
   skills: string[];
   gold: number;
@@ -287,10 +287,31 @@ export interface RPStats {
   affection?: number;
   // New Fields for RP
   alignment?: string;
-  statusEffects?: string[];
+  statusEffects?: StatusEffect[];
   limitGauge?: number; // 0-100
   traits?: string[];
   quests?: Quest[]; // NEW: Quest tracking
+}
+
+export interface Item {
+  id: string;
+  name: string;
+  type: "weapon" | "armor" | "consumable" | "key" | "misc";
+  rarity: "common" | "uncommon" | "rare" | "epic" | "legendary";
+  description?: string;
+  effect?: string;
+  quantity?: number;
+  attributes?: Record<string, number>; // e.g. { STR: 1, DEF: 5 }
+}
+
+export interface StatusEffect {
+  id: string;
+  name: string;
+  description: string;
+  type: "buff" | "debuff";
+  duration: string; // e.g. "3 turns", "1 hour"
+  source?: string;
+  effect?: string; // e.g. "+2 STR", "1d4 DMG per turn"
 }
 
 export interface Quest {

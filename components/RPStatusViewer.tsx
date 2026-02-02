@@ -98,10 +98,10 @@ export const RPStatusViewer: React.FC<RPStatusViewerProps> = ({
   const [isEditing, setIsEditing] = useState(false);
   const [tempStats, setTempStats] = useState<RPStats | null>(null);
   const [hoveredItem, setHoveredItem] = useState<{
-    name: string;
+    name: any;
     rect: DOMRect;
   } | null>(null);
-  const [selectedItem, setSelectedItem] = useState<string | null>(null);
+  const [selectedItem, setSelectedItem] = useState<any | null>(null);
 
   // Generation states
   const [isGenerating, setIsGenerating] = useState(false);
@@ -126,7 +126,7 @@ export const RPStatusViewer: React.FC<RPStatusViewerProps> = ({
   const targetLangName =
     lang === "zh" ? "Chinese" : lang === "jp" ? "Japanese" : "English";
 
-  const handleItemEnter = (e: React.MouseEvent, item: string) => {
+  const handleItemEnter = (e: React.MouseEvent, item: any) => {
     const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
     setHoveredItem({ name: item, rect });
   };
@@ -580,31 +580,24 @@ export const RPStatusViewer: React.FC<RPStatusViewerProps> = ({
                 <Sparkles size={12} /> {t("rp_status", lang)}
               </h4>
               {isEditing ? (
-                <textarea
-                  className="w-full bg-black border border-[color:var(--lain-cyan)]/30 p-2 text-xs font-mono"
-                  value={tempStats?.statusEffects?.join(", ") || ""}
-                  onChange={(e) => {
-                    const arr = e.target.value
-                      .split(",")
-                      .map((s) => s.trim())
-                      .filter((s) => s);
-                    setTempStats((prev) =>
-                      prev ? { ...prev, statusEffects: arr } : null,
-                    );
-                  }}
-                  placeholder="Poisoned, Hasted..."
-                />
+                <div className="text-xs italic opacity-50 p-2 border border-dashed">Raw JSON editing only via State Engine</div>
               ) : (
                 <div className="flex flex-wrap gap-2">
                   {(currentStats.statusEffects || []).length > 0 ? (
-                    (currentStats.statusEffects || []).map((eff, i) => (
-                      <span
-                        key={i}
-                        className="text-[10px] px-2 py-1 bg-purple-900/30 border border-purple-500 text-purple-300 rounded shadow-[0_0_5px_rgba(168,85,247,0.4)]"
-                      >
-                        {eff}
-                      </span>
-                    ))
+                    (currentStats.statusEffects || []).map((eff, i) => {
+                      const name = typeof eff === 'string' ? eff : eff.name;
+                      return (
+                        <span
+                          key={i}
+                          className="text-[10px] px-2 py-1 bg-purple-900/30 border border-purple-500 text-purple-300 rounded shadow-[0_0_5px_rgba(168,85,247,0.4)] cursor-help"
+                          onMouseEnter={(e) => handleItemEnter(e, eff as any)}
+                          onMouseLeave={handleItemLeave}
+                          onClick={() => setSelectedItem(eff as any)}
+                        >
+                          {name}
+                        </span>
+                      );
+                    })
                   ) : (
                     <span className="text-[10px] opacity-40 italic">
                       Normal Condition
@@ -620,34 +613,29 @@ export const RPStatusViewer: React.FC<RPStatusViewerProps> = ({
                 <Shield size={12} /> {t("rp_equip", lang)}
               </h4>
               {isEditing ? (
-                <textarea
-                  className="w-full bg-black border border-[color:var(--lain-cyan)]/30 p-2 text-xs font-mono h-20"
-                  value={tempStats?.equipment?.join(", ") || ""}
-                  onChange={(e) => {
-                    const arr = e.target.value
-                      .split(",")
-                      .map((s) => s.trim())
-                      .filter((s) => s);
-                    setTempStats((prev) =>
-                      prev ? { ...prev, equipment: arr } : null,
-                    );
-                  }}
-                  placeholder="Sword, Armor, Boots..."
-                />
+                <div className="text-xs italic opacity-50 p-2 border border-dashed">Raw JSON editing only via State Engine</div>
               ) : (
                 <div className="flex flex-wrap gap-2">
                   {(currentStats.equipment || []).length > 0 ? (
-                    currentStats.equipment.map((item, i) => (
-                      <span
-                        key={i}
-                        className="text-[10px] px-2 py-1 bg-blue-900/30 border border-blue-500/50 text-blue-200 rounded hover:bg-blue-900/50 transition-colors cursor-help"
-                        onMouseEnter={(e) => handleItemEnter(e, item)}
-                        onMouseLeave={handleItemLeave}
-                        onClick={() => setSelectedItem(item)}
-                      >
-                        {item}
-                      </span>
-                    ))
+                    currentStats.equipment.map((item, i) => {
+                      const name = typeof item === 'string' ? item : item.name;
+                      const rarity = typeof item !== 'string' ? item.rarity : 'common';
+                      let colorClass = "border-blue-500/50 text-blue-200 bg-blue-900/30";
+                      if (rarity === 'legendary') colorClass = "border-yellow-500 text-yellow-200 bg-yellow-900/30";
+                      if (rarity === 'epic') colorClass = "border-purple-500 text-purple-200 bg-purple-900/30";
+                      
+                      return (
+                        <span
+                          key={i}
+                          className={`text-[10px] px-2 py-1 border rounded transition-colors cursor-help ${colorClass}`}
+                          onMouseEnter={(e) => handleItemEnter(e, item as any)}
+                          onMouseLeave={handleItemLeave}
+                          onClick={() => setSelectedItem(item as any)}
+                        >
+                          {name}
+                        </span>
+                      );
+                    })
                   ) : (
                     <span className="text-[10px] opacity-40 italic">
                       Nothing equipped.
@@ -663,34 +651,24 @@ export const RPStatusViewer: React.FC<RPStatusViewerProps> = ({
                 <Backpack size={12} /> {t("rp_inv", lang)}
               </h4>
               {isEditing ? (
-                <textarea
-                  className="w-full bg-black border border-[color:var(--lain-cyan)]/30 p-2 text-xs font-mono h-20"
-                  value={tempStats?.inventory?.join(", ") || ""}
-                  onChange={(e) => {
-                    const arr = e.target.value
-                      .split(",")
-                      .map((s) => s.trim())
-                      .filter((s) => s);
-                    setTempStats((prev) =>
-                      prev ? { ...prev, inventory: arr } : null,
-                    );
-                  }}
-                  placeholder="Item1, Item2..."
-                />
+                <div className="text-xs italic opacity-50 p-2 border border-dashed">Raw JSON editing only via State Engine</div>
               ) : (
                 <div className="flex flex-wrap gap-2">
                   {(currentStats.inventory || []).length > 0 ? (
-                    currentStats.inventory.map((item, i) => (
-                      <span
-                        key={i}
-                        className="text-[10px] px-2 py-1 bg-[color:var(--lain-cyan)]/10 border border-[color:var(--lain-cyan)]/30 text-[color:var(--lain-cyan)] rounded hover:bg-[color:var(--lain-cyan)]/20 transition-colors cursor-help"
-                        onMouseEnter={(e) => handleItemEnter(e, item)}
-                        onMouseLeave={handleItemLeave}
-                        onClick={() => setSelectedItem(item)}
-                      >
-                        {item}
-                      </span>
-                    ))
+                    currentStats.inventory.map((item, i) => {
+                      const name = typeof item === 'string' ? item : item.name;
+                      return (
+                        <span
+                          key={i}
+                          className="text-[10px] px-2 py-1 bg-[color:var(--lain-cyan)]/10 border border-[color:var(--lain-cyan)]/30 text-[color:var(--lain-cyan)] rounded hover:bg-[color:var(--lain-cyan)]/20 transition-colors cursor-help"
+                          onMouseEnter={(e) => handleItemEnter(e, item as any)}
+                          onMouseLeave={handleItemLeave}
+                          onClick={() => setSelectedItem(item as any)}
+                        >
+                          {name}
+                        </span>
+                      );
+                    })
                   ) : (
                     <span className="text-[10px] opacity-40 italic">
                       Empty.

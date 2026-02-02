@@ -44,21 +44,27 @@ ${recentChat}
 [INSTRUCTIONS]
 1. Analyze the interaction for physical damage, item usage, loot acquisition, gold transaction, or location changes.
 2. Check for NEW quests started or EXISTING quests updated (completed/failed/objectives).
-3. Think step-by-step about WHY a change occurred (Chain of Thought).
-4. Output a JSON object containing your reasoning and the variable updates.
+3. When updating Inventory or Equipment, use rich objects with {id, name, type, rarity, description, attributes}.
+4. When updating Status Effects, use rich objects with {id, name, type, duration, source, effect}.
+5. Think step-by-step about WHY a change occurred (Chain of Thought).
+6. Output a JSON object containing your reasoning and the variable updates.
 
 [OUTPUT FORMAT]
 Response must be a SINGLE valid JSON object:
 {
-  "reasoning": "User accepted the village elder's request...",
+  "reasoning": "User accepted the village elder's request and found a sword...",
   "deltas": {
     "hp": { "current": 15, "max": 20 },
     "gold": 90,
-    "inventory": ["Sword", "Shield"], // Return FULL inventory list if changed
-    "statusEffects": ["Energized"],
+    "inventory": [
+       { "id": "i1", "name": "Rusty Sword", "type": "weapon", "rarity": "common", "description": "Old blade", "attributes": {"STR": 1} }
+    ],
+    "statusEffects": [
+       { "id": "s1", "name": "Energized", "type": "buff", "duration": "3 turns", "source": "Potion", "effect": "+2 DEX" }
+    ],
     "quests": [
        { "id": "q1", "title": "Rat Problem", "description": "Kill 5 rats", "status": "active", "objectives": [{ "id": "o1", "text": "Kill rats", "completed": false }] }
-    ] // Return FULL quest list if changed
+    ]
   },
   "suggestedEvents": ["Nearby explosion heard"] // Optional environmental cues
 }
