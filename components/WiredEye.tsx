@@ -143,17 +143,19 @@ export const WiredEye: React.FC<WiredEyeProps> = ({ className, style }) => {
                         <circle cx={pupilPos.x} cy={pupilPos.y} r="18" strokeWidth="2" />
                         <circle cx={pupilPos.x} cy={pupilPos.y} r="8" fill="currentColor" />
                         
-                        {/* Vertical Pupil Line / Glitch */}
-                        <line 
-                            x1={pupilPos.x} y1={pupilPos.y - 30} 
-                            x2={pupilPos.x} y2={pupilPos.y + 30} 
-                            strokeWidth="1" 
-                            strokeOpacity="0.8" 
-                        />
-                        
                         {/* Highlight */}
                         <circle cx={pupilPos.x + 6} cy={pupilPos.y - 6} r="3" fill="white" className="animate-pulse" />
                     </g>
+
+                    {/* Vertical Glitch Line - Static in center, not affected by pupil movement, but affected by blink (squash) */}
+                    {/* User requested: "Don't follow eye occlusion" -> Keep it outside clipPath? */}
+                    {/* If outside clipPath, it might bleed out of eye bounds. But user said "don't follow eye occlusion relationship", maybe they want it strictly graphical overlay. */}
+                    <line 
+                        x1="50" y1="20" 
+                        x2="50" y2="80" 
+                        strokeWidth="1" 
+                        strokeOpacity="0.8" 
+                    />
                 </g>
             </g>
         </svg>
