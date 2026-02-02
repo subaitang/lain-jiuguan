@@ -245,6 +245,16 @@ export const generateLainResponse = async (
 
     let systemInstruction = `You are ${activePersona.name}.\n[PERSONA]: ${activePersona.description}\n`;
     if (activePersona.systemPrompt) systemInstruction += `[INSTRUCTIONS]: ${activePersona.systemPrompt}\n`;
+
+    // MEMORY INJECTION
+    if (lore && lore.length > 0) {
+        const activeLore = lore.filter(l => l.active).map(l => `[FACT]: ${l.content}`).join('\n');
+        if (activeLore) systemInstruction += `\n[KNOWLEDGE_BASE]:\n${activeLore}\n`;
+    }
+
+    if (summaries && summaries.length > 0) {
+        systemInstruction += `\n[PAST_EVENTS_SUMMARY]:\n${summaries.join('\n\n')}\n`;
+    }
     
     if (settings.generation.chatMode === 'rp') {
         systemInstruction += `\n[WORLD]: ${rpContext || "Wired Sector"}\n`;
