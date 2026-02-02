@@ -281,7 +281,7 @@ export interface RPStats {
   inventory: Item[];
   equipment: Item[];
   gender?: string;
-  skills: string[];
+  skills: Skill[];
   gold: number;
   class: string;
   affection?: number;
@@ -320,6 +320,17 @@ export interface Quest {
   description: string;
   status: "active" | "completed" | "failed";
   objectives: { id: string; text: string; completed: boolean }[];
+  rewards?: string; // Text description of rewards
+}
+
+export interface Skill {
+  id: string;
+  name: string;
+  description: string;
+  cost?: string; // e.g. "5 MP"
+  cooldown?: string;
+  effect?: string;
+  type?: "active" | "passive";
 }
 
 export interface RPDate {

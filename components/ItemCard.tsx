@@ -1,9 +1,9 @@
 import React from 'react';
-import { X, Box, Zap, Shield, Sword } from 'lucide-react';
-import { Item, StatusEffect } from '../types';
+import { X, Box, Zap, Shield, Sword, Book } from 'lucide-react';
+import { Item, StatusEffect, Skill } from '../types';
 
 interface ItemCardProps {
-    item: Item | StatusEffect | string;
+    item: Item | StatusEffect | Skill | string;
     onClose: () => void;
     position?: { x: number, y: number };
     isTooltip?: boolean;
@@ -19,6 +19,8 @@ export const ItemCard: React.FC<ItemCardProps> = ({ item, onClose, position, isT
     const duration = isObj && 'duration' in item ? item.duration : undefined;
     const source = isObj && 'source' in item ? item.source : undefined;
     const effect = isObj && 'effect' in item ? item.effect : undefined;
+    const cost = isObj && 'cost' in item ? item.cost : undefined;
+    const cooldown = isObj && 'cooldown' in item ? item.cooldown : undefined;
 
     const getRarityColor = (r: string) => {
         switch(r.toLowerCase()) {
@@ -34,13 +36,16 @@ export const ItemCard: React.FC<ItemCardProps> = ({ item, onClose, position, isT
 
     if (isTooltip) {
         if (!position) return null;
+        // User requested: "upper right corner of that module".
+        // We will position it relative to the rect passed in.
+        // position.x = rect.right, position.y = rect.top
         return (
             <div
-                className="fixed z-[300] bg-black/90 backdrop-blur-md border border-[color:var(--lain-cyan)] p-3 pointer-events-none animate-in fade-in duration-200 min-w-[200px] max-w-[300px]"
-                style={{ top: position.y + 10, left: position.x + 10 }}
+                className="fixed z-[300] bg-black/95 backdrop-blur-md border border-[color:var(--lain-cyan)] p-3 pointer-events-none animate-in fade-in duration-200 min-w-[200px] max-w-[300px] shadow-[0_0_15px_rgba(0,0,0,0.8)]"
+                style={{ top: position.y, left: position.x + 10 }}
             >
                 <div className="text-xs font-bold text-[color:var(--lain-cyan)] uppercase mb-1 flex items-center gap-2 border-b border-[color:var(--lain-cyan)]/30 pb-1">
-                    {type === 'weapon' ? <Sword size={12}/> : type === 'armor' ? <Shield size={12}/> : <Box size={12} />} {name}
+                    {type === 'weapon' ? <Sword size={12}/> : type === 'armor' ? <Shield size={12}/> : (cost ? <Book size={12}/> : <Box size={12} />)} {name}
                 </div>
                 <div className="text-[10px] opacity-70 mb-2 italic">{description}</div>
                 {attributes && (
@@ -56,6 +61,11 @@ export const ItemCard: React.FC<ItemCardProps> = ({ item, onClose, position, isT
                 {effect && (
                     <div className="mt-1 text-[9px] text-yellow-300 flex items-center gap-1">
                         <Zap size={8}/> {effect}
+                    </div>
+                )}
+                {cost && (
+                    <div className="mt-1 text-[9px] text-blue-300 flex items-center gap-1">
+                        <span className="opacity-50">COST:</span> {cost}
                     </div>
                 )}
                 {duration && (
@@ -102,8 +112,10 @@ export const ItemCard: React.FC<ItemCardProps> = ({ item, onClose, position, isT
                     </div>
                 )}
 
-                {(effect || duration || source) && (
+                {(effect || duration || source || cost || cooldown) && (
                     <div className="mb-4 space-y-1 text-xs">
+                        {cost && <div className="text-blue-400"><span className="opacity-50">COST:</span> {cost}</div>}
+                        {cooldown && <div className="text-gray-400"><span className="opacity-50">COOLDOWN:</span> {cooldown}</div>}
                         {effect && <div className="text-yellow-300"><span className="opacity-50">EFFECT:</span> {effect}</div>}
                         {duration && <div className="text-blue-300"><span className="opacity-50">DURATION:</span> {duration}</div>}
                         {source && <div className="text-purple-300"><span className="opacity-50">SOURCE:</span> {source}</div>}

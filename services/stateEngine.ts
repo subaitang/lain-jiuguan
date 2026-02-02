@@ -43,11 +43,12 @@ ${recentChat}
 
 [INSTRUCTIONS]
 1. Analyze the interaction for physical damage, item usage, loot acquisition, gold transaction, or location changes.
-2. Check for NEW quests started or EXISTING quests updated (completed/failed/objectives).
+2. Check for NEW quests started or EXISTING quests updated (completed/failed/objectives). Include "rewards" string if mentioned.
 3. When updating Inventory or Equipment, use rich objects with {id, name, type, rarity, description, attributes}.
 4. When updating Status Effects, use rich objects with {id, name, type, duration, source, effect}.
-5. Think step-by-step about WHY a change occurred (Chain of Thought).
-6. Output a JSON object containing your reasoning and the variable updates.
+5. When updating Skills, use rich objects with {id, name, description, cost, effect, type}.
+6. Think step-by-step about WHY a change occurred (Chain of Thought).
+7. Output a JSON object containing your reasoning and the variable updates.
 
 [OUTPUT FORMAT]
 Response must be a SINGLE valid JSON object:
@@ -62,8 +63,11 @@ Response must be a SINGLE valid JSON object:
     "statusEffects": [
        { "id": "s1", "name": "Energized", "type": "buff", "duration": "3 turns", "source": "Potion", "effect": "+2 DEX" }
     ],
+    "skills": [
+       { "id": "sk1", "name": "Slash", "type": "active", "cost": "5 MP", "description": "Basic attack", "effect": "1d6 DMG" }
+    ],
     "quests": [
-       { "id": "q1", "title": "Rat Problem", "description": "Kill 5 rats", "status": "active", "objectives": [{ "id": "o1", "text": "Kill rats", "completed": false }] }
+       { "id": "q1", "title": "Rat Problem", "description": "Kill 5 rats", "status": "active", "rewards": "50 Gold", "objectives": [{ "id": "o1", "text": "Kill rats", "completed": false }] }
     ]
   },
   "suggestedEvents": ["Nearby explosion heard"] // Optional environmental cues

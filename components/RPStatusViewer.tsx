@@ -684,31 +684,24 @@ export const RPStatusViewer: React.FC<RPStatusViewerProps> = ({
                 <Book size={12} /> {t("rp_skill", lang)}
               </h4>
               {isEditing ? (
-                <textarea
-                  className="w-full bg-black border border-[color:var(--lain-cyan)]/30 p-2 text-xs font-mono h-20"
-                  value={tempStats?.skills?.join(", ") || ""}
-                  onChange={(e) => {
-                    const arr = e.target.value
-                      .split(",")
-                      .map((s) => s.trim())
-                      .filter((s) => s);
-                    setTempStats((prev) =>
-                      prev ? { ...prev, skills: arr } : null,
-                    );
-                  }}
-                  placeholder="Fireball, Hack..."
-                />
+                <div className="text-xs italic opacity-50 p-2 border border-dashed">Raw JSON editing only via State Engine</div>
               ) : (
                 <div className="flex flex-wrap gap-2">
                   {(currentStats.skills || []).length > 0 ? (
-                    currentStats.skills.map((skill, i) => (
-                      <span
-                        key={i}
-                        className="text-[10px] px-2 py-1 bg-yellow-900/30 border border-yellow-600 text-yellow-200 rounded hover:bg-yellow-900/50 transition-colors cursor-help border-dashed"
-                      >
-                        {skill}
-                      </span>
-                    ))
+                    currentStats.skills.map((skill, i) => {
+                        const name = typeof skill === 'string' ? skill : skill.name;
+                        return (
+                          <span
+                            key={i}
+                            className="text-[10px] px-2 py-1 bg-yellow-900/30 border border-yellow-600 text-yellow-200 rounded hover:bg-yellow-900/50 transition-colors cursor-help border-dashed"
+                            onMouseEnter={(e) => handleItemEnter(e, skill as any)}
+                            onMouseLeave={handleItemLeave}
+                            onClick={() => setSelectedItem(skill as any)}
+                          >
+                            {name}
+                          </span>
+                        );
+                    })
                   ) : (
                     <span className="text-[10px] opacity-40 italic">
                       No skills recorded.
@@ -721,11 +714,11 @@ export const RPStatusViewer: React.FC<RPStatusViewerProps> = ({
         </div>
       </div>
       {hoveredItem && (
-        <ItemCard 
-            item={hoveredItem.name} 
-            onClose={() => {}} 
-            position={{ x: hoveredItem.rect.left, y: hoveredItem.rect.bottom }} 
-            isTooltip={true} 
+        <ItemCard
+            item={hoveredItem.name}
+            onClose={() => {}}
+            position={{ x: hoveredItem.rect.right, y: hoveredItem.rect.top }}
+            isTooltip={true}
         />
       )}
       {selectedItem && (

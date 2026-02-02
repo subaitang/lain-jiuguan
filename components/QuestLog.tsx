@@ -2,7 +2,7 @@
 import React from 'react';
 import { NaviWindow } from './NaviWindow';
 import { Quest, RPStats } from '../types';
-import { CheckCircle, Circle, AlertCircle, Scroll } from 'lucide-react';
+import { CheckCircle, Circle, AlertCircle, Scroll, Gift } from 'lucide-react';
 
 interface QuestLogProps {
     quests: Quest[];
@@ -53,7 +53,7 @@ export const QuestLog: React.FC<QuestLogProps> = ({
                                 </div>
                                 <p className="text-xs opacity-80 mb-4 font-sans italic">{quest.description}</p>
                                 
-                                <div className="space-y-2">
+                                <div className="space-y-2 mb-4">
                                     {quest.objectives.map(obj => (
                                         <div key={obj.id} className="flex items-center gap-2 text-xs">
                                             {obj.completed ? <CheckCircle size={14} className="text-green-500"/> : <Circle size={14} className="opacity-50"/>}
@@ -61,6 +61,14 @@ export const QuestLog: React.FC<QuestLogProps> = ({
                                         </div>
                                     ))}
                                 </div>
+
+                                {quest.rewards && (
+                                    <div className="flex items-center gap-2 text-xs text-yellow-400 border-t border-[color:var(--lain-cyan)]/20 pt-2">
+                                        <Gift size={12} />
+                                        <span className="font-bold tracking-wider">REWARD:</span>
+                                        <span>{quest.rewards}</span>
+                                    </div>
+                                )}
 
                                 <div className="absolute top-0 right-0 p-1 opacity-0 group-hover:opacity-100 transition-opacity">
                                     <button 
