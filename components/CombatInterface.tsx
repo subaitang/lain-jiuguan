@@ -6,7 +6,8 @@ import { audio } from '../services/audioEngine';
   
 interface CombatInterfaceProps {  
     session: ChatSession;  
-    onUpdateSession: (s: ChatSession) => void;  
+    onUpdateSession: (s: ChatSession) => void;
+    onCombatAction: (type: 'ATTACK' | 'DEFEND' | 'SKILL', targetId?: string) => void;
     onClose: () => void;  
     isMinimized: boolean;  
     isMaximized: boolean;  
@@ -15,21 +16,15 @@ interface CombatInterfaceProps {
 }  
   
 export const CombatInterface: React.FC<CombatInterfaceProps> = ({  
-    session, onUpdateSession, onClose, isMinimized, isMaximized, onMinimize, onMaximize  
+    session, onUpdateSession, onCombatAction, onClose, isMinimized, isMaximized, onMinimize, onMaximize  
 }) => {  
     const [action, setAction] = useState('');  
     if (!session.combatState || !session.combatState.active) return null;  
   
     const handleAction = (type: string) => {  
         audio.playClickSound();  
-        const newLog = [...session.combatState!.log, `Player used ${type}!`];  
-        onUpdateSession({  
-            ...session,  
-            combatState: {  
-                ...session.combatState!,  
-                log: newLog  
-            }  
-        });  
+        // We defer logic to the parent via onCombatAction
+        onCombatAction(type as any);
     };  
   
     return (  
@@ -57,7 +52,7 @@ export const CombatInterface: React.FC<CombatInterfaceProps> = ({
   
                     <div className="w-1/3 border-l border-red-500/30 pl-4 text-xs overflow-y-auto font-mono opacity-80">  
                         {session.combatState.log.map((entry, i) => (  
-                            <div key={i} className="mb-1">> {entry}</div>  
+                            <div key={i} className="mb-1">{entry.startsWith('>') ? entry : `> ${entry}`}</div>  
                         ))}  
                     </div>  
                 </div>  
@@ -76,4 +71,5 @@ export const CombatInterface: React.FC<CombatInterfaceProps> = ({
                 </div>  
             </div>  
         </NaviWindow>  
-    );  
+    );
+};

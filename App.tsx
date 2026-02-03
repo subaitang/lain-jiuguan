@@ -26,6 +26,8 @@ import { CustomCursor } from './components/CustomCursor.tsx';
 import { MusicPlayerWindow } from './components/MusicPlayerWindow.tsx';
 import { generateLainResponse, translateContent, summarizeContent, generateAutonomousAction, generateSpeech, transcribeAudio, updateMemoryTable, generateRandomPersona, initializeRPStats, generateQuickActions, generateOpeningScenarios, generateMusicSuggestion } from './services/geminiService';
 import { generateWorldNews, generateCampaignSetting, generateMapData } from './services/worldEngine';
+import { CombatInterface } from './components/CombatInterface.tsx';
+import { initCombat, processCombatAction } from './services/combatEngine';
 import { audio } from './services/audioEngine';
 import { logger } from './services/logger';
 import { sessionService } from './services/sessionService';
@@ -282,7 +284,8 @@ const App: React.FC = () => {
         [WindowType.WORLD_NEWS]: 14,
         [WindowType.THOUGHT_TRACE]: 25,
         [WindowType.MAP]: 16,
-        [WindowType.MUSIC]: 17
+        [WindowType.MUSIC]: 17,
+        [WindowType.COMBAT]: 18
     });
 
     const bringToFront = (type: WindowType) => {
@@ -307,6 +310,7 @@ const App: React.FC = () => {
         [WindowType.THOUGHT_TRACE]: { minimized: false, maximized: false, closed: true },
         [WindowType.MAP]: { minimized: false, maximized: false, closed: true },
         [WindowType.MUSIC]: { minimized: false, maximized: false, closed: true },
+        [WindowType.COMBAT]: { minimized: false, maximized: false, closed: true },
     });
     
     const [profileTarget, setProfileTarget] = useState<PersonaSettings | UserSettings | null>(null);
@@ -1561,6 +1565,88 @@ const App: React.FC = () => {
     
     const fetchActions = handleGenerateActions;
 
+    const handleStartCombat = () => {
+        if (!currentSession.userRPStats) return;
+        
+        const enemyStats = {
+            name: "Cyber-Phantom",
+            level: currentSession.userRPStats.level,
+            xp: 0, maxXp: 100,
+            hp: { current: 30, max: 30 },
+            mp: { current: 10, max: 10 },
+            attributes: { STR: 12, DEX: 12, CON: 12, INT: 10, WIS: 10, CHA: 10 },
+            inventory: [],
+            equipment: [],
+            skills: [],
+            gold: 50,
+            class: "Construct"
+        };
+
+        const combatState = initCombat(currentSession.userRPStats, [enemyStats]);
+        
+        setCurrentSession(prev => {
+            const updated = { ...prev, combatState };
+            sessionService.save(updated);
+            return updated;
+        });
+
+        updateWindowState(WindowType.COMBAT, { closed: false });
+        audio.playCombatSound();
+    };
+
+    const handleCombatAction = (type: 'ATTACK' | 'DEFEND' | 'SKILL', targetId?: string) => {
+        if (!currentSession.combatState || !currentSession.userRPStats) return;
+
+        const enemies = currentSession.combatState.participants.filter(p => !p.isPlayer);
+        const enemyStats = currentSession.combatState.participants.find(p => p.id === (targetId || enemies[0]?.id));
+        
+        // Simple dummy enemy reconstruction since we don't have full object in state
+        const dummyEnemy = {
+            name: enemyStats?.name,
+            level: 1, xp: 0, maxXp: 100,
+            hp: { current: enemyStats?.hp || 10, max: enemyStats?.maxHp || 10 },
+            mp: { current: 0, max: 0 },
+            attributes: { STR: 10, DEX: 10, CON: 10, INT: 10, WIS: 10, CHA: 10 },
+            inventory: [],
+            equipment: [],
+            skills: [],
+            gold: 0,
+            class: "Enemy"
+        };
+
+        // @ts-ignore
+        const newState = processCombatAction(
+            currentSession.combatState, 
+            { type, targetId }, 
+            currentSession.userRPStats, 
+            dummyEnemy
+        );
+
+        setCurrentSession(prev => {
+            // @ts-ignore
+            const updated = { 
+                ...prev, 
+                combatState: newState,
+                userRPStats: {
+                    ...prev.userRPStats,
+                    hp: {
+                        ...prev.userRPStats.hp,
+                        current: newState.participants.find(p => p.isPlayer)?.hp || prev.userRPStats.hp.current
+                    }
+                }
+            };
+            sessionService.save(updated);
+            return updated;
+        });
+        
+        if (!newState.active) {
+            audio.playLevelUpSound(); // Victory fanfare logic can be better
+        } else {
+             audio.playClickSound();
+        }
+    };
+
+
     const handleExecuteAction = (action: QuickReplyOption) => {
         const actionText = `[ACTION: ${action.category?.toUpperCase() || "GENERIC"}] ${action.label}`;
         if (action.dc) {
@@ -1771,6 +1857,25 @@ const App: React.FC = () => {
                     />
                 </div>
             )}
+
+
+            <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/50 backdrop-blur-sm pointer-events-auto" 
+                 style={{ 
+                     zIndex: zIndices[WindowType.COMBAT],
+                     display: windows[WindowType.COMBAT].closed ? 'none' : 'flex' 
+                 }}>
+                {/* @ts-ignore */}
+                <CombatInterface
+                    session={currentSession}
+                    onUpdateSession={setCurrentSession}
+                    onCombatAction={handleCombatAction}
+                    onClose={() => updateWindowState(WindowType.COMBAT, { closed: true })}
+                    isMinimized={windows[WindowType.COMBAT].minimized}
+                    isMaximized={windows[WindowType.COMBAT].maximized}
+                    onMinimize={() => updateWindowState(WindowType.COMBAT, { minimized: !windows[WindowType.COMBAT].minimized })}
+                    onMaximize={() => updateWindowState(WindowType.COMBAT, { maximized: !windows[WindowType.COMBAT].maximized })}
+                />
+            </div>
 
             <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/50 backdrop-blur-sm pointer-events-auto" 
                  style={{ 
@@ -2536,6 +2641,14 @@ const App: React.FC = () => {
                                                     title="Status Screen"
                                                 >
                                                     <User size={8} /> STATUS
+                                                </button>
+                                            
+                                                <button 
+                                                    onClick={handleStartCombat}
+                                                    className="px-2 py-1 text-[8px] border border-red-500/50 hover:bg-red-500/10 hover:text-red-500 transition-colors font-bold tracking-wider text-left bg-black flex items-center gap-1 truncate text-red-500"
+                                                    title="Initiate Combat Simulation"
+                                                >
+                                                    <Sword size={8} /> FIGHT
                                                 </button>
                                             </div>
 
