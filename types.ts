@@ -341,6 +341,13 @@ export interface RPDate {
   timeOfDay: "Morning" | "Noon" | "Evening" | "Night";
 }
 
+export interface WorldLore {
+  title: string;
+  description: string;
+  factions: { name: string; description: string }[];
+  history: { era: string; event: string }[];
+}
+
 export interface WorldEvent {
   id: string;
   dayCount: number;
@@ -409,6 +416,7 @@ export interface ChatSession {
   userRPStats?: RPStats;
   charRPStats?: RPStats;
   rpWorldContext?: string;
+  worldLore?: WorldLore; // NEW: Rich World Data
   mapData?: MapData;
   combatState?: CombatState; // NEW: Combat System
   userPos?: { x: number; y: number };

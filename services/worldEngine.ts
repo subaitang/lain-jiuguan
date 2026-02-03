@@ -74,24 +74,36 @@ Content should be immersive, descriptive, and consistent with the world context.
 export const generateCampaignSetting = async (
   keywords: string,
   settings: AppSettings,
-): Promise<string> => {
+): Promise<import("../types").WorldLore | null> => {
   const langName =
     settings.user.language === "zh"
       ? "Chinese"
       : settings.user.language === "jp"
         ? "Japanese"
         : "English";
-  const res = await callModelApi(settings.api, {
-    contents: [
-      {
-        role: "user",
-        parts: [
-          {
-            text: `Generate a detailed RPG world setting description based on: ${keywords}. LANGUAGE: ${langName}.`,
-          },
-        ],
-      },
-    ],
-  });
-  return res.text || "";
+  
+  const prompt = `Generate a detailed RPG world setting based on: "${keywords}".
+LANGUAGE: ${langName}.
+Return valid JSON ONLY structure:
+{
+  "title": "Name of the World",
+  "description": "General atmosphere and setting description (2-3 sentences)",
+  "factions": [
+    {"name": "Faction Name", "description": "Brief info"}
+  ],
+  "history": [
+    {"era": "Year/Age", "event": "Key event"}
+  ]
+}`;
+
+  try {
+    const res = await callModelApi(settings.api, {
+      contents: [{ role: "user", parts: [{ text: prompt }] }],
+      responseMimeType: "application/json"
+    });
+    return JSON.parse(cleanJsonString(res.text));
+  } catch (e) {
+    console.error("World Gen Failed", e);
+    return null;
+  }
 };

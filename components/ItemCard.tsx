@@ -36,13 +36,26 @@ export const ItemCard: React.FC<ItemCardProps> = ({ item, onClose, position, isT
 
     if (isTooltip) {
         if (!position) return null;
-        // User requested: "upper right corner of that module".
-        // We will position it relative to the rect passed in.
-        // position.x = rect.right, position.y = rect.top
+        
+        // Smart Positioning
+        const TOOLTIP_WIDTH = 250; // Approx max width
+        const TOOLTIP_HEIGHT = 150; // Approx max height
+        
+        let left = position.x + 10;
+        let top = position.y;
+
+        if (left + TOOLTIP_WIDTH > window.innerWidth) {
+            left = position.x - TOOLTIP_WIDTH - 10;
+        }
+        
+        if (top + TOOLTIP_HEIGHT > window.innerHeight) {
+            top = window.innerHeight - TOOLTIP_HEIGHT - 10;
+        }
+
         return (
             <div
                 className="fixed z-[300] bg-black/95 backdrop-blur-md border border-[color:var(--lain-cyan)] p-3 pointer-events-none animate-in fade-in duration-200 min-w-[200px] max-w-[300px] shadow-[0_0_15px_rgba(0,0,0,0.8)]"
-                style={{ top: position.y, left: position.x + 10 }}
+                style={{ top, left }}
             >
                 <div className="text-xs font-bold text-[color:var(--lain-cyan)] uppercase mb-1 flex items-center gap-2 border-b border-[color:var(--lain-cyan)]/30 pb-1">
                     {type === 'weapon' ? <Sword size={12}/> : type === 'armor' ? <Shield size={12}/> : (cost ? <Book size={12}/> : <Box size={12} />)} {name}

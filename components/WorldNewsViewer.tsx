@@ -1,8 +1,8 @@
 
 import React, { useState } from 'react';
 import { NaviWindow } from './NaviWindow';
-import { WorldEvent, RPDate, Language } from '../types';
-import { Newspaper, Globe, RefreshCw, Calendar, Clock, ChevronRight, ChevronDown, ChevronUp } from 'lucide-react';
+import { WorldEvent, RPDate, Language, WorldLore } from '../types';
+import { Newspaper, Globe, RefreshCw, Calendar, Clock, ChevronRight, ChevronDown, ChevronUp, Flag, BookOpen } from 'lucide-react';
 import { t } from '../utils/translations';
 
 interface WorldNewsViewerProps {
@@ -17,6 +17,7 @@ interface WorldNewsViewerProps {
     rpDate?: RPDate;
     onAdvanceDay?: () => void;
     language: Language;
+    worldLore?: WorldLore;
 }
 
 export const WorldNewsViewer: React.FC<WorldNewsViewerProps> = ({
@@ -30,9 +31,11 @@ export const WorldNewsViewer: React.FC<WorldNewsViewerProps> = ({
     onMaximize,
     rpDate,
     onAdvanceDay,
-    language
+    language,
+    worldLore
 }) => {
     const [expandedEventId, setExpandedEventId] = useState<string | null>(null);
+    const [activeTab, setActiveTab] = useState<'news' | 'factions' | 'history'>('news');
 
     // Get current day's event if it exists
     const todayEvent = rpDate ? events.find(e => e.dayCount === rpDate.dayCount) : null;
@@ -42,7 +45,7 @@ export const WorldNewsViewer: React.FC<WorldNewsViewerProps> = ({
 
     return (
         <NaviWindow
-            title={t('wn_title', language)}
+            title={worldLore ? `WORLD // ${worldLore.title.toUpperCase()}` : t('wn_title', language)}
             onClose={onClose}
             isMinimized={isMinimized}
             isMaximized={isMaximized}
@@ -77,77 +80,131 @@ export const WorldNewsViewer: React.FC<WorldNewsViewerProps> = ({
                     </div>
                 )}
 
-                {/* Main Action Bar */}
-                <div className="p-3 border-b border-[color:var(--lain-cyan)]/30 flex justify-between items-center bg-[color:var(--lain-cyan)]/5">
-                    <div className="flex items-center gap-2 text-xs font-bold tracking-widest">
-                        <Globe size={14} /> NEWS FEED
-                    </div>
-                    <button 
-                        onClick={onGenerate}
-                        disabled={isLoading}
-                        className="px-3 py-1 border border-[color:var(--lain-cyan)] hover:bg-[color:var(--lain-cyan)] hover:text-black transition-colors text-xs flex items-center gap-2"
+                <div className="flex border-b border-[color:var(--lain-cyan)]/30">
+                    <button
+                        onClick={() => setActiveTab('news')}
+                        className={`flex-1 py-2 text-xs font-bold flex items-center justify-center gap-2 transition-colors ${activeTab === 'news' ? 'bg-[color:var(--lain-cyan)] text-black' : 'hover:bg-[color:var(--lain-cyan)]/10'}`}
                     >
-                        <RefreshCw size={12} className={isLoading ? "animate-spin" : ""} />
-                        {isLoading ? "SCANNING..." : (todayEvent ? t('wn_regenerate', language) : t('wn_update', language))}
+                        <Newspaper size={12} /> NEWS
                     </button>
+                    {worldLore && (
+                        <>
+                            <button
+                                onClick={() => setActiveTab('factions')}
+                                className={`flex-1 py-2 text-xs font-bold flex items-center justify-center gap-2 transition-colors ${activeTab === 'factions' ? 'bg-[color:var(--lain-cyan)] text-black' : 'hover:bg-[color:var(--lain-cyan)]/10'}`}
+                            >
+                                <Flag size={12} /> FACTIONS
+                            </button>
+                            <button
+                                onClick={() => setActiveTab('history')}
+                                className={`flex-1 py-2 text-xs font-bold flex items-center justify-center gap-2 transition-colors ${activeTab === 'history' ? 'bg-[color:var(--lain-cyan)] text-black' : 'hover:bg-[color:var(--lain-cyan)]/10'}`}
+                            >
+                                <BookOpen size={12} /> HISTORY
+                            </button>
+                        </>
+                    )}
                 </div>
+
+                {/* Main Action Bar */}
+                {activeTab === 'news' && (
+                    <div className="p-3 border-b border-[color:var(--lain-cyan)]/30 flex justify-between items-center bg-[color:var(--lain-cyan)]/5">
+                        <div className="flex items-center gap-2 text-xs font-bold tracking-widest">
+                            <Globe size={14} /> NEWS FEED
+                        </div>
+                        <button
+                            onClick={onGenerate}
+                            disabled={isLoading}
+                            className="px-3 py-1 border border-[color:var(--lain-cyan)] hover:bg-[color:var(--lain-cyan)] hover:text-black transition-colors text-xs flex items-center gap-2"
+                        >
+                            <RefreshCw size={12} className={isLoading ? "animate-spin" : ""} />
+                            {isLoading ? "SCANNING..." : (todayEvent ? t('wn_regenerate', language) : t('wn_update', language))}
+                        </button>
+                    </div>
+                )}
                 
                 <div className="flex-1 overflow-y-auto p-4 space-y-4 scrollbar-thin">
-                    {/* Today's Highlight */}
-                    {todayEvent ? (
-                        <div className="border-2 border-[color:var(--lain-cyan)] p-4 bg-[color:var(--lain-cyan)]/5 shadow-[0_0_15px_rgba(0,240,255,0.1)] mb-6">
-                            <div className="flex justify-between items-start mb-2">
-                                <span className="bg-[color:var(--lain-cyan)] text-black px-2 py-0.5 text-[9px] font-bold uppercase">LATEST</span>
-                                <span className="text-[10px] opacity-60 font-mono">{todayEvent.date}</span>
-                            </div>
-                            <h2 className="text-lg font-bold text-glow mb-2 uppercase leading-tight">{todayEvent.headline}</h2>
-                            <div className={`text-xs opacity-90 font-serif leading-relaxed transition-all overflow-hidden ${expandedEventId === todayEvent.id ? 'max-h-96' : 'max-h-0'}`}>
-                                <div className="py-2 border-t border-[color:var(--lain-cyan)]/30 mt-2">
-                                    {todayEvent.content}
+                    {activeTab === 'news' && (
+                        <>
+                            {/* Today's Highlight */}
+                            {todayEvent ? (
+                                <div className="border-2 border-[color:var(--lain-cyan)] p-4 bg-[color:var(--lain-cyan)]/5 shadow-[0_0_15px_rgba(0,240,255,0.1)] mb-6">
+                                    <div className="flex justify-between items-start mb-2">
+                                        <span className="bg-[color:var(--lain-cyan)] text-black px-2 py-0.5 text-[9px] font-bold uppercase">LATEST</span>
+                                        <span className="text-[10px] opacity-60 font-mono">{todayEvent.date}</span>
+                                    </div>
+                                    <h2 className="text-lg font-bold text-glow mb-2 uppercase leading-tight">{todayEvent.headline}</h2>
+                                    <div className={`text-xs opacity-90 font-serif leading-relaxed transition-all overflow-hidden ${expandedEventId === todayEvent.id ? 'max-h-96' : 'max-h-0'}`}>
+                                        <div className="py-2 border-t border-[color:var(--lain-cyan)]/30 mt-2">
+                                            {todayEvent.content}
+                                        </div>
+                                    </div>
+                                    <button
+                                        onClick={() => setExpandedEventId(expandedEventId === todayEvent.id ? null : todayEvent.id)}
+                                        className="w-full text-center mt-2 pt-1 border-t border-[color:var(--lain-cyan)]/20 hover:bg-[color:var(--lain-cyan)]/10 transition-colors flex justify-center"
+                                    >
+                                        {expandedEventId === todayEvent.id ? <ChevronUp size={16}/> : <ChevronDown size={16}/>}
+                                    </button>
                                 </div>
-                            </div>
-                            <button 
-                                onClick={() => setExpandedEventId(expandedEventId === todayEvent.id ? null : todayEvent.id)}
-                                className="w-full text-center mt-2 pt-1 border-t border-[color:var(--lain-cyan)]/20 hover:bg-[color:var(--lain-cyan)]/10 transition-colors flex justify-center"
-                            >
-                                {expandedEventId === todayEvent.id ? <ChevronUp size={16}/> : <ChevronDown size={16}/>}
-                            </button>
-                        </div>
-                    ) : (
-                        <div className="border border-dashed border-[color:var(--lain-cyan)]/30 p-6 text-center opacity-50 mb-6">
-                            NO REPORT GENERATED FOR TODAY (DAY {rpDate?.dayCount}).
-                        </div>
-                    )}
-
-                    <div className="text-[10px] font-bold tracking-[0.2em] opacity-50 uppercase border-b border-[color:var(--lain-cyan)]/20 pb-1 mb-2">ARCHIVE</div>
-
-                    {historyEvents.length === 0 && (
-                        <div className="text-center opacity-40 text-xs italic">No historical archives.</div>
-                    )}
-                    
-                    {historyEvents.map(event => (
-                        <div key={event.id} className="border border-[color:var(--lain-cyan)]/20 bg-black/40 p-3 relative group hover:border-[color:var(--lain-cyan)]/50 transition-colors">
-                            <div className="flex justify-between items-center mb-1">
-                                <div className="text-[10px] opacity-60 font-mono">DAY {event.dayCount}</div>
-                                <div className="text-[9px] uppercase font-bold border border-[color:var(--lain-cyan)]/30 px-1 rounded text-[color:var(--lain-cyan)] opacity-70">
-                                    {event.type}
-                                </div>
-                            </div>
-                            <div 
-                                className="cursor-pointer flex justify-between items-center"
-                                onClick={() => setExpandedEventId(expandedEventId === event.id ? null : event.id)}
-                            >
-                                <h3 className="text-xs font-bold opacity-90 group-hover:text-glow">{event.headline}</h3>
-                                {expandedEventId === event.id ? <ChevronUp size={12}/> : <ChevronDown size={12}/>}
-                            </div>
-                            
-                            {expandedEventId === event.id && (
-                                <div className="mt-2 pt-2 border-t border-[color:var(--lain-cyan)]/20 text-[10px] opacity-80 leading-relaxed font-serif animate-in slide-in-from-top-1">
-                                    {event.content}
+                            ) : (
+                                <div className="border border-dashed border-[color:var(--lain-cyan)]/30 p-6 text-center opacity-50 mb-6">
+                                    NO REPORT GENERATED FOR TODAY (DAY {rpDate?.dayCount}).
                                 </div>
                             )}
+
+                            <div className="text-[10px] font-bold tracking-[0.2em] opacity-50 uppercase border-b border-[color:var(--lain-cyan)]/20 pb-1 mb-2">ARCHIVE</div>
+
+                            {historyEvents.length === 0 && (
+                                <div className="text-center opacity-40 text-xs italic">No historical archives.</div>
+                            )}
+                            
+                            {historyEvents.map(event => (
+                                <div key={event.id} className="border border-[color:var(--lain-cyan)]/20 bg-black/40 p-3 relative group hover:border-[color:var(--lain-cyan)]/50 transition-colors">
+                                    <div className="flex justify-between items-center mb-1">
+                                        <div className="text-[10px] opacity-60 font-mono">DAY {event.dayCount}</div>
+                                        <div className="text-[9px] uppercase font-bold border border-[color:var(--lain-cyan)]/30 px-1 rounded text-[color:var(--lain-cyan)] opacity-70">
+                                            {event.type}
+                                        </div>
+                                    </div>
+                                    <div
+                                        className="cursor-pointer flex justify-between items-center"
+                                        onClick={() => setExpandedEventId(expandedEventId === event.id ? null : event.id)}
+                                    >
+                                        <h3 className="text-xs font-bold opacity-90 group-hover:text-glow">{event.headline}</h3>
+                                        {expandedEventId === event.id ? <ChevronUp size={12}/> : <ChevronDown size={12}/>}
+                                    </div>
+                                    
+                                    {expandedEventId === event.id && (
+                                        <div className="mt-2 pt-2 border-t border-[color:var(--lain-cyan)]/20 text-[10px] opacity-80 leading-relaxed font-serif animate-in slide-in-from-top-1">
+                                            {event.content}
+                                        </div>
+                                    )}
+                                </div>
+                            ))}
+                        </>
+                    )}
+
+                    {activeTab === 'factions' && worldLore && (
+                        <div className="space-y-4">
+                            {worldLore.factions.map((fac, i) => (
+                                <div key={i} className="border border-[color:var(--lain-cyan)]/30 p-4 bg-black/40">
+                                    <h3 className="text-sm font-bold text-[color:var(--lain-cyan)] mb-2 uppercase tracking-wider">{fac.name}</h3>
+                                    <p className="text-xs opacity-80 leading-relaxed">{fac.description}</p>
+                                </div>
+                            ))}
                         </div>
-                    ))}
+                    )}
+
+                    {activeTab === 'history' && worldLore && (
+                        <div className="space-y-4 relative border-l border-[color:var(--lain-cyan)]/30 ml-2 pl-4">
+                            {worldLore.history.map((hist, i) => (
+                                <div key={i} className="relative">
+                                    <div className="absolute -left-[21px] top-1 w-2 h-2 bg-[color:var(--lain-cyan)] rounded-full"></div>
+                                    <div className="text-xs font-bold text-yellow-400 mb-1">{hist.era}</div>
+                                    <p className="text-xs opacity-80 leading-relaxed">{hist.event}</p>
+                                </div>
+                            ))}
+                        </div>
+                    )}
                 </div>
             </div>
         </NaviWindow>
