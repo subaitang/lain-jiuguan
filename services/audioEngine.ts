@@ -9,6 +9,11 @@ class SoundEngine {
   private ambientGain: GainNode | null = null;
   private ghostTimerId: number | null = null;
   
+  // Ambience
+  private ambienceSource: AudioBufferSourceNode | null = null;
+  private ambienceGain: GainNode | null = null;
+  private currentAmbienceType: string | null = null;
+
   private currentSource: AudioBufferSourceNode | null = null;
 
   private micStream: MediaStream | null = null;
@@ -88,6 +93,73 @@ class SoundEngine {
           this.currentSource.disconnect();
           this.currentSource = null;
       }
+  }
+
+  stopAmbience() {
+      if (this.ambienceSource) {
+          try { this.ambienceSource.stop(); } catch(e){}
+          this.ambienceSource.disconnect();
+          this.ambienceSource = null;
+      }
+      this.currentAmbienceType = null;
+  }
+
+  playAmbience(type: 'rain' | 'city' | 'calm' | 'tension') {
+      if (this.isMuted || !this.ctx || this.currentAmbienceType === type) return;
+      this.init();
+      this.stopAmbience();
+      this.currentAmbienceType = type;
+
+      const bufferSize = this.ctx.sampleRate * 2.0;
+      const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+      const data = buffer.getChannelData(0);
+
+      // Procedural Generation
+      let lastOut = 0;
+      for (let i = 0; i < bufferSize; i++) {
+          const white = Math.random() * 2 - 1;
+          if (type === 'rain') {
+              // Pink/Brownish noise for rain
+              data[i] = (lastOut + (0.02 * white)) / 1.02;
+              lastOut = data[i];
+              data[i] *= 3.5;
+          } else if (type === 'city') {
+              // Industrial drone
+              data[i] = Math.sin(i * 0.01) * 0.5 + Math.random() * 0.1;
+          } else if (type === 'tension') {
+              // High pitch drone
+              data[i] = Math.sin(i * 0.05) * 0.1 + (Math.random() * 0.05);
+          } else {
+              // Calm - Low hum
+              data[i] = Math.sin(i * 0.002) * 0.5;
+          }
+      }
+
+      this.ambienceSource = this.ctx.createBufferSource();
+      this.ambienceSource.buffer = buffer;
+      this.ambienceSource.loop = true;
+      
+      this.ambienceGain = this.ctx.createGain();
+      this.ambienceGain.gain.value = 0.15;
+      
+      // Filter to shape sound
+      const filter = this.ctx.createBiquadFilter();
+      if (type === 'rain') {
+          filter.type = 'lowpass';
+          filter.frequency.value = 800;
+      } else if (type === 'city') {
+          filter.type = 'bandpass';
+          filter.frequency.value = 200;
+      } else {
+          filter.type = 'lowpass';
+          filter.frequency.value = 400;
+      }
+
+      this.ambienceSource.connect(filter);
+      filter.connect(this.ambienceGain);
+      this.ambienceGain.connect(this.gainNode!);
+      
+      this.ambienceSource.start();
   }
 
   async playPCM(base64Data: string, sampleRate = 24000, onEnded?: () => void) {

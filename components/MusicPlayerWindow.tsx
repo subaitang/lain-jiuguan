@@ -2,7 +2,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { NaviWindow } from './NaviWindow';
 import { AppSettings, MusicTrack } from '../types';
-import { Play, Pause, SkipForward, SkipBack, Plus, Music, Upload, Search, X, Volume2, Radio, Headphones, Globe } from 'lucide-react';
+import { Play, Pause, SkipForward, SkipBack, Plus, Music, Upload, Search, X, Volume2, Radio, Headphones, Globe, CloudRain, Zap, Coffee, Building2 } from 'lucide-react';
 import { audio } from '../services/audioEngine';
 
 interface MusicPlayerWindowProps {
@@ -271,6 +271,18 @@ export const MusicPlayerWindow: React.FC<MusicPlayerWindowProps> = ({
                                 {currentTrack ? `${currentTrack.title} - ${currentTrack.artist}` : "NO TRACK SELECTED"}
                             </div>
                         </div>
+                    </div>
+                </div>
+
+                {/* Ambience Controls */}
+                <div className="flex justify-between items-center p-2 bg-[color:var(--lain-cyan)]/10 border-b border-[color:var(--lain-cyan)]/30">
+                    <div className="text-[10px] font-bold opacity-60 tracking-wider">ATMOSPHERE</div>
+                    <div className="flex gap-1">
+                        <button onClick={() => audio.playAmbience('rain')} className="p-1.5 hover:bg-[color:var(--lain-cyan)] hover:text-black border border-[color:var(--lain-cyan)]/30 transition-colors" title="Rain"><CloudRain size={12}/></button>
+                        <button onClick={() => audio.playAmbience('city')} className="p-1.5 hover:bg-[color:var(--lain-cyan)] hover:text-black border border-[color:var(--lain-cyan)]/30 transition-colors" title="City"><Building2 size={12}/></button>
+                        <button onClick={() => audio.playAmbience('tension')} className="p-1.5 hover:bg-[color:var(--lain-cyan)] hover:text-black border border-[color:var(--lain-cyan)]/30 transition-colors" title="Tension"><Zap size={12}/></button>
+                        <button onClick={() => audio.playAmbience('calm')} className="p-1.5 hover:bg-[color:var(--lain-cyan)] hover:text-black border border-[color:var(--lain-cyan)]/30 transition-colors" title="Calm"><Coffee size={12}/></button>
+                        <button onClick={() => audio.stopAmbience()} className="p-1.5 hover:bg-red-500 hover:text-white border border-red-500/30 transition-colors ml-2" title="Stop Ambience"><X size={12}/></button>
                     </div>
                 </div>
 

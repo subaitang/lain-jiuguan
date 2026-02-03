@@ -23,6 +23,7 @@ interface VisualFeedProps {
   setOpacity: (val: number) => void;
   settings: AppSettings;
   onUpdateSettings?: (s: AppSettings) => void;
+  sceneImage?: string; // NEW: Scene visualization
 }
 
 const isVideoUrl = (url: string) => {
@@ -214,7 +215,9 @@ export const VisualFeed: React.FC<VisualFeedProps> = ({
   setOpacity,
   settings,
   onUpdateSettings,
+  sceneImage,
 }) => {
+  const [viewMode, setViewMode] = useState<'persona' | 'scene'>('persona');
   const [visibleSrc, setVisibleSrc] = useState<string>(
     activePersona.visualImage || "https://picsum.photos/seed/lain/800/800",
   );
@@ -229,12 +232,18 @@ export const VisualFeed: React.FC<VisualFeedProps> = ({
   const lang = settings.user.language;
 
   useEffect(() => {
-    if (activePersona.visualImage) {
+    if (sceneImage && viewMode === 'scene') {
+        setVisibleSrc(sceneImage);
+    } else if (activePersona.visualImage && viewMode === 'persona') {
       setVisibleSrc(activePersona.visualImage);
-    } else if (!activePersona.visualImage && visibleSrc.startsWith("data:")) {
+    } else if (!activePersona.visualImage && visibleSrc.startsWith("data:") && viewMode === 'persona') {
       setVisibleSrc("https://picsum.photos/seed/lain/800/800");
     }
-  }, [activePersona.visualImage, activePersona.id]);
+  }, [activePersona.visualImage, activePersona.id, sceneImage, viewMode]);
+
+  useEffect(() => {
+      if (sceneImage) setViewMode('scene');
+  }, [sceneImage]);
 
   const handleGenRequest = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -399,6 +408,21 @@ export const VisualFeed: React.FC<VisualFeedProps> = ({
           )}
 
           <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col gap-2 z-20 pointer-events-auto">
+            <div className="flex flex-col gap-2 mb-2 p-1 bg-black/50 rounded">
+                <button
+                    onClick={() => setViewMode('persona')}
+                    className={`text-[8px] font-bold px-1 py-0.5 border ${viewMode === 'persona' ? 'bg-[color:var(--lain-cyan)] text-black border-[color:var(--lain-cyan)]' : 'text-[color:var(--lain-cyan)] border-[color:var(--lain-cyan)]/30'}`}
+                >
+                    PERSONA
+                </button>
+                <button
+                    onClick={() => setViewMode('scene')}
+                    className={`text-[8px] font-bold px-1 py-0.5 border ${viewMode === 'scene' ? 'bg-[color:var(--lain-cyan)] text-black border-[color:var(--lain-cyan)]' : 'text-[color:var(--lain-cyan)] border-[color:var(--lain-cyan)]/30'}`}
+                >
+                    SCENE
+                </button>
+            </div>
+
             <button
               onClick={() => setShowPosGrid(!showPosGrid)}
               className={`p-2 border border-[color:var(--lain-cyan)]/50 hover:bg-[color:var(--lain-cyan)] hover:text-black transition-colors ${

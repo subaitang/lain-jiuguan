@@ -417,6 +417,7 @@ export interface ChatSession {
   charRPStats?: RPStats;
   rpWorldContext?: string;
   worldLore?: WorldLore; // NEW: Rich World Data
+  currentSceneImage?: string; // NEW: Visual Scene
   mapData?: MapData;
   combatState?: CombatState; // NEW: Combat System
   userPos?: { x: number; y: number };
@@ -440,6 +441,7 @@ export enum WindowType {
   MUSIC = "MUSIC",
   QUESTS = "QUESTS", // NEW
   COMBAT = "COMBAT",
+  MANUAL = "MANUAL",
 }
 
 export interface WeatherData {
