@@ -13,8 +13,6 @@ export const QuestTracker: React.FC<QuestTrackerProps> = ({ quests, visible }) =
 
     const activeQuests = quests.filter(q => q.status === 'active');
 
-    if (activeQuests.length === 0) return null;
-
     return (
         <div className="fixed top-20 right-4 z-[50] w-64 bg-black/60 border border-[color:var(--lain-cyan)]/30 backdrop-blur-sm p-2 font-['Share_Tech_Mono'] text-[color:var(--lain-cyan)] pointer-events-none select-none animate-in slide-in-from-right-4">
             <div className="flex items-center gap-2 mb-2 border-b border-[color:var(--lain-cyan)]/30 pb-1">
@@ -22,7 +20,10 @@ export const QuestTracker: React.FC<QuestTrackerProps> = ({ quests, visible }) =
                 <span className="text-[10px] font-bold tracking-widest uppercase">Current Objectives</span>
             </div>
             <div className="space-y-3">
-                {activeQuests.map(quest => (
+                {activeQuests.length === 0 ? (
+                    <div className="text-[10px] opacity-50 italic text-center py-2">No active missions.</div>
+                ) : (
+                    activeQuests.map(quest => (
                     <div key={quest.id} className="space-y-1">
                         <div className="text-xs font-bold text-yellow-400 drop-shadow-md">{quest.title}</div>
                         <div className="space-y-0.5">
@@ -36,7 +37,7 @@ export const QuestTracker: React.FC<QuestTrackerProps> = ({ quests, visible }) =
                             ))}
                         </div>
                     </div>
-                ))}
+                )))}
             </div>
         </div>
     );
