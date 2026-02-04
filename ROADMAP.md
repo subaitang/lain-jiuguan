@@ -13,7 +13,7 @@ Next Phase: **Phase 2: RPG Depth (Gameplay)**
 ## ⚔️ Phase 2: RPG Depth (Gameplay) (Current Focus)
 - [x] **Inventory Crafting**: A system to combine items found in RP mode.
 - [x] **Combat System**: A turn-based graphical interface for battles (Initiative, HP bars, Action menu).
-- [ ] **NPC Social Web**: A visual graph showing how NPCs relate to each other (Friend/Enemy/Neutral).
+- [x] **NPC Social Web**: A visual graph showing how NPCs relate to each other (Friend/Enemy/Neutral).
 - [ ] **Dice Check History**: A log of all dice rolls and their outcomes.
 
 ## 🧠 Phase 3: Core Intelligence (AI)

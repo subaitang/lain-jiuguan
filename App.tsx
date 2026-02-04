@@ -30,6 +30,7 @@ import { CombatInterface } from './components/CombatInterface.tsx';
 import { TerminalMode } from './components/TerminalMode.tsx';
 import { MatrixRain } from './components/MatrixRain.tsx';
 import { CraftingWindow } from './components/CraftingWindow.tsx';
+import { SocialWeb } from './components/SocialWeb.tsx';
 import { initCombat, processCombatAction } from './services/combatEngine';
 import { audio } from './services/audioEngine';
 import { logger } from './services/logger';
@@ -289,7 +290,8 @@ const App: React.FC = () => {
         [WindowType.MAP]: 16,
         [WindowType.MUSIC]: 17,
         [WindowType.COMBAT]: 18,
-        [WindowType.CRAFTING]: 19
+        [WindowType.CRAFTING]: 19,
+        [WindowType.SOCIAL_WEB]: 20
     });
 
     const bringToFront = (type: WindowType) => {
@@ -316,6 +318,7 @@ const App: React.FC = () => {
         [WindowType.MUSIC]: { minimized: false, maximized: false, closed: true },
         [WindowType.COMBAT]: { minimized: false, maximized: false, closed: true },
         [WindowType.CRAFTING]: { minimized: false, maximized: false, closed: true },
+        [WindowType.SOCIAL_WEB]: { minimized: false, maximized: false, closed: true },
     });
     
     const [profileTarget, setProfileTarget] = useState<PersonaSettings | UserSettings | null>(null);
@@ -1876,6 +1879,24 @@ const App: React.FC = () => {
 
 
 
+
+            <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/50 backdrop-blur-sm pointer-events-auto" 
+                 style={{ 
+                     zIndex: zIndices[WindowType.SOCIAL_WEB],
+                     display: windows[WindowType.SOCIAL_WEB].closed ? 'none' : 'flex' 
+                 }}>
+                {/* @ts-ignore */}
+                <SocialWeb
+                    npcRegistry={currentSession.npcRegistry || {}}
+                    userStats={currentSession.userRPStats}
+                    onClose={() => updateWindowState(WindowType.SOCIAL_WEB, { closed: true })}
+                    isMinimized={windows[WindowType.SOCIAL_WEB].minimized}
+                    isMaximized={windows[WindowType.SOCIAL_WEB].maximized}
+                    onMinimize={() => updateWindowState(WindowType.SOCIAL_WEB, { minimized: !windows[WindowType.SOCIAL_WEB].minimized })}
+                    onMaximize={() => updateWindowState(WindowType.SOCIAL_WEB, { maximized: !windows[WindowType.SOCIAL_WEB].maximized })}
+                />
+            </div>
+
             <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/50 backdrop-blur-sm pointer-events-auto" 
                  style={{ 
                      zIndex: zIndices[WindowType.CRAFTING],
@@ -2707,6 +2728,14 @@ const App: React.FC = () => {
                                                     title="Open Crafting"
                                                 >
                                                     <Hammer size={8} /> CRAFT
+                                                </button>
+
+                                                <button 
+                                                    onClick={() => toggleWindow(WindowType.SOCIAL_WEB)}
+                                                    className="px-2 py-1 text-[8px] border border-[color:var(--lain-cyan)]/30 hover:border-[color:var(--lain-cyan)] hover:bg-[color:var(--lain-cyan)] hover:text-black transition-colors font-bold tracking-wider text-left bg-black flex items-center gap-1 truncate"
+                                                    title="Open Social Web"
+                                                >
+                                                    <Users size={8} /> SOCIAL
                                                 </button>
                                             </div>
 

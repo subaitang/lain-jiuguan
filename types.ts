@@ -442,6 +442,7 @@ export enum WindowType {
   QUESTS = "QUESTS", // NEW
   COMBAT = "COMBAT",
   CRAFTING = "CRAFTING",
+  SOCIAL_WEB = "SOCIAL_WEB",
   MANUAL = "MANUAL",
 }
 
