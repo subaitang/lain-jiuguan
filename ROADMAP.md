@@ -2,16 +2,16 @@
 # 🌌 Wired Navi // System Roadmap
 
 Current Status: **Stable // v12.6**
-Next Phase: **Expansion & Immersion**
+Next Phase: **Phase 2: RPG Depth (Gameplay)**
 
-## 🛠 Phase 1: Immersion & Visuals (Current Focus)
+## 🛠 Phase 1: Immersion & Visuals (Complete)
 - [x] **Scene Visualization**: Integration with Image Gen APIs to render the current RP scene or NPC portrait on demand.
 - [x] **Audio Atmosphere**: Adaptive background ambience (Rain, Cyber-City, Silence) based on the "World Context".
-- [ ] **Retro-Terminal Mode**: A pure text-based command line interface for "Hacking" minigames or advanced queries.
-- [ ] **Matrix Rain / Glitch Screens**: More screensaver options.
+- [x] **Retro-Terminal Mode**: A pure text-based command line interface for "Hacking" minigames or advanced queries.
+- [x] **Matrix Rain / Glitch Screens**: More screensaver options.
 
-## ⚔️ Phase 2: RPG Depth (Gameplay)
-- [ ] **Inventory Crafting**: A system to combine items found in RP mode.
+## ⚔️ Phase 2: RPG Depth (Gameplay) (Current Focus)
+- [x] **Inventory Crafting**: A system to combine items found in RP mode.
 - [x] **Combat System**: A turn-based graphical interface for battles (Initiative, HP bars, Action menu).
 - [ ] **NPC Social Web**: A visual graph showing how NPCs relate to each other (Friend/Enemy/Neutral).
 - [ ] **Dice Check History**: A log of all dice rolls and their outcomes.

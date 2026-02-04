@@ -27,6 +27,9 @@ import { MusicPlayerWindow } from './components/MusicPlayerWindow.tsx';
 import { generateLainResponse, translateContent, summarizeContent, generateAutonomousAction, generateSpeech, transcribeAudio, updateMemoryTable, generateRandomPersona, initializeRPStats, generateQuickActions, generateOpeningScenarios, generateMusicSuggestion } from './services/geminiService';
 import { generateWorldNews, generateCampaignSetting, generateMapData } from './services/worldEngine';
 import { CombatInterface } from './components/CombatInterface.tsx';
+import { TerminalMode } from './components/TerminalMode.tsx';
+import { MatrixRain } from './components/MatrixRain.tsx';
+import { CraftingWindow } from './components/CraftingWindow.tsx';
 import { initCombat, processCombatAction } from './services/combatEngine';
 import { audio } from './services/audioEngine';
 import { logger } from './services/logger';
@@ -285,7 +288,8 @@ const App: React.FC = () => {
         [WindowType.THOUGHT_TRACE]: 25,
         [WindowType.MAP]: 16,
         [WindowType.MUSIC]: 17,
-        [WindowType.COMBAT]: 18
+        [WindowType.COMBAT]: 18,
+        [WindowType.CRAFTING]: 19
     });
 
     const bringToFront = (type: WindowType) => {
@@ -311,6 +315,7 @@ const App: React.FC = () => {
         [WindowType.MAP]: { minimized: false, maximized: false, closed: true },
         [WindowType.MUSIC]: { minimized: false, maximized: false, closed: true },
         [WindowType.COMBAT]: { minimized: false, maximized: false, closed: true },
+        [WindowType.CRAFTING]: { minimized: false, maximized: false, closed: true },
     });
     
     const [profileTarget, setProfileTarget] = useState<PersonaSettings | UserSettings | null>(null);
@@ -347,7 +352,9 @@ const App: React.FC = () => {
     const [isOOC, setIsOOC] = useState(false);
     const [showQuickNote, setShowQuickNote] = useState(false);
     const [quickNote, setQuickNote] = useState('');
-    const [startMenuOpen, setStartMenuOpen] = useState(false); 
+    const [startMenuOpen, setStartMenuOpen] = useState(false);
+    const [showTerminal, setShowTerminal] = useState(false);
+    const [screensaverMode, setScreensaverMode] = useState<'eye' | 'matrix'>('eye'); 
 
     const toggleWindow = (type: WindowType) => {
         bringToFront(type);
@@ -1823,6 +1830,15 @@ const App: React.FC = () => {
                 scale={settings.ui.cursorSize}
             />
             <DiceOverlay rolling={isAutoRolling} result={autoRollResult} tier={rollTier} onComplete={() => {}} />
+            {showTerminal && (
+                <TerminalMode 
+                    settings={settings} 
+                    onClose={() => setShowTerminal(false)} 
+                    session={currentSession}
+                    onUpdateSettings={setSettings}
+                />
+            )}
+
             <FXOverlay type={fxType} onComplete={() => setFxType(null)} />
 
             {!windows[WindowType.THOUGHT_TRACE].closed && selectedTraceMsg && (
@@ -1858,6 +1874,34 @@ const App: React.FC = () => {
                 </div>
             )}
 
+
+
+            <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/50 backdrop-blur-sm pointer-events-auto" 
+                 style={{ 
+                     zIndex: zIndices[WindowType.CRAFTING],
+                     display: windows[WindowType.CRAFTING].closed ? 'none' : 'flex' 
+                 }}>
+                {/* @ts-ignore */}
+                <CraftingWindow
+                    inventory={currentSession.userRPStats?.inventory || []}
+                    onUpdateInventory={(newInv) => {
+                        setCurrentSession(prev => {
+                            // @ts-ignore
+                            const updated = { 
+                                ...prev, 
+                                userRPStats: { ...prev.userRPStats, inventory: newInv } 
+                            };
+                            sessionService.save(updated);
+                            return updated;
+                        });
+                    }}
+                    onClose={() => updateWindowState(WindowType.CRAFTING, { closed: true })}
+                    isMinimized={windows[WindowType.CRAFTING].minimized}
+                    isMaximized={windows[WindowType.CRAFTING].maximized}
+                    onMinimize={() => updateWindowState(WindowType.CRAFTING, { minimized: !windows[WindowType.CRAFTING].minimized })}
+                    onMaximize={() => updateWindowState(WindowType.CRAFTING, { maximized: !windows[WindowType.CRAFTING].maximized })}
+                />
+            </div>
 
             <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/50 backdrop-blur-sm pointer-events-auto" 
                  style={{ 
@@ -1923,6 +1967,12 @@ const App: React.FC = () => {
                             <div className="flex-1 flex flex-col p-1 gap-1">
                                 <button onClick={() => handleStartMenuAction('fullscreen')} className="flex items-center gap-3 p-2 hover:bg-[color:var(--lain-cyan)] hover:text-black transition-colors text-xs font-bold tracking-wider group">
                                     <Maximize size={14} className="group-hover:scale-110 transition-transform"/> FULLSCREEN
+                                </button>
+                                <button onClick={() => { setShowTerminal(true); setStartMenuOpen(false); }} className="flex items-center gap-3 p-2 hover:bg-[color:var(--lain-cyan)] hover:text-black transition-colors text-xs font-bold tracking-wider group">
+                                    <Terminal size={14} className="group-hover:scale-110 transition-transform"/> TERMINAL_MODE
+                                </button>
+                                <button onClick={() => setScreensaverMode(prev => prev === 'eye' ? 'matrix' : 'eye')} className="flex items-center gap-3 p-2 hover:bg-[color:var(--lain-cyan)] hover:text-black transition-colors text-xs font-bold tracking-wider group">
+                                    <Activity size={14} className="group-hover:scale-110 transition-transform"/> TOGGLE_SCREENSAVER
                                 </button>
                                 <button onClick={() => handleStartMenuAction('mute')} className="flex items-center gap-3 p-2 hover:bg-[color:var(--lain-cyan)] hover:text-black transition-colors text-xs font-bold tracking-wider group">
                                     {settings.sound.enabled ? <Volume2 size={14}/> : <VolumeX size={14}/>} AUDIO_TOGGLE
@@ -2649,6 +2699,14 @@ const App: React.FC = () => {
                                                     title="Initiate Combat Simulation"
                                                 >
                                                     <Sword size={8} /> FIGHT
+                                                </button>
+
+                                                <button 
+                                                    onClick={() => toggleWindow(WindowType.CRAFTING)}
+                                                    className="px-2 py-1 text-[8px] border border-[color:var(--lain-cyan)]/30 hover:border-[color:var(--lain-cyan)] hover:bg-[color:var(--lain-cyan)] hover:text-black transition-colors font-bold tracking-wider text-left bg-black flex items-center gap-1 truncate"
+                                                    title="Open Crafting"
+                                                >
+                                                    <Hammer size={8} /> CRAFT
                                                 </button>
                                             </div>
 

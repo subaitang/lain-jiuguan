@@ -441,6 +441,7 @@ export enum WindowType {
   MUSIC = "MUSIC",
   QUESTS = "QUESTS", // NEW
   COMBAT = "COMBAT",
+  CRAFTING = "CRAFTING",
   MANUAL = "MANUAL",
 }
 
