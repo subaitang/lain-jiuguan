@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect, useRef } from 'react';
-import { Send, Wifi, Settings as SettingsIcon, Terminal, Volume2, VolumeX, RefreshCw, X, Square, RotateCcw, Monitor, Network, Disc, HardDrive, Image as ImageIcon, Speech, EyeOff, Paperclip, Smile, Edit2, Check, CloudLightning, Activity, Video, Copy, BrainCircuit, Mic, Database, Heart, Zap, AlertCircle, Reply, AtSign, Globe, Share2, User, UserPlus, Users, Languages, Sword, Dice5, Eye, Map, MessageCircle, Footprints, Shield, Skull, Dna, Hexagon, Cpu, PlayCircle, Hourglass, Target, ChevronUp, ChevronLeft, ChevronRight, PenTool, Loader2, MicOff, Brain, Map as MapIcon, Play, Save, FileText, LayoutGrid, EyeOff as EyeOffIcon, StickyNote, Scan, Box, Power, Maximize, AlertTriangle, Music, Hammer } from 'lucide-react';
+import { Send, Wifi, Settings as SettingsIcon, Terminal, Volume2, VolumeX, RefreshCw, X, Square, RotateCcw, Monitor, Network, Disc, HardDrive, Image as ImageIcon, Speech, EyeOff, Paperclip, Smile, Edit2, Check, CloudLightning, Activity, Video, Copy, BrainCircuit, Mic, Database, Heart, Zap, AlertCircle, Reply, AtSign, Globe, Share2, User, UserPlus, Users, Languages, Sword, Dice5, Eye, Map, MessageCircle, Footprints, Shield, Skull, Dna, Hexagon, Cpu, PlayCircle, Hourglass, Target, ChevronUp, ChevronLeft, ChevronRight, PenTool, Loader2, MicOff, Brain, Map as MapIcon, Play, Save, FileText, LayoutGrid, EyeOff as EyeOffIcon, StickyNote, Scan, Box, Power, Maximize, AlertTriangle, Music } from 'lucide-react';
 import { NaviWindow } from './components/NaviWindow.tsx';
 import { AudioVisualizer } from './components/AudioVisualizer.tsx';
 import { BootScreen } from './components/BootScreen.tsx';
@@ -28,9 +28,6 @@ import { generateLainResponse, translateContent, summarizeContent, generateAuton
 import { generateWorldNews, generateCampaignSetting, generateMapData } from './services/worldEngine';
 import { CombatInterface } from './components/CombatInterface.tsx';
 import { TerminalMode } from './components/TerminalMode.tsx';
-import { MatrixRain } from './components/MatrixRain.tsx';
-import { CraftingWindow } from './components/CraftingWindow.tsx';
-import { SocialWeb } from './components/SocialWeb.tsx';
 import { initCombat, processCombatAction } from './services/combatEngine';
 import { audio } from './services/audioEngine';
 import { logger } from './services/logger';
@@ -289,9 +286,7 @@ const App: React.FC = () => {
         [WindowType.THOUGHT_TRACE]: 25,
         [WindowType.MAP]: 16,
         [WindowType.MUSIC]: 17,
-        [WindowType.COMBAT]: 18,
-        [WindowType.CRAFTING]: 19,
-        [WindowType.SOCIAL_WEB]: 20
+        [WindowType.COMBAT]: 18
     });
 
     const bringToFront = (type: WindowType) => {
@@ -317,8 +312,6 @@ const App: React.FC = () => {
         [WindowType.MAP]: { minimized: false, maximized: false, closed: true },
         [WindowType.MUSIC]: { minimized: false, maximized: false, closed: true },
         [WindowType.COMBAT]: { minimized: false, maximized: false, closed: true },
-        [WindowType.CRAFTING]: { minimized: false, maximized: false, closed: true },
-        [WindowType.SOCIAL_WEB]: { minimized: false, maximized: false, closed: true },
     });
     
     const [profileTarget, setProfileTarget] = useState<PersonaSettings | UserSettings | null>(null);
@@ -356,8 +349,7 @@ const App: React.FC = () => {
     const [showQuickNote, setShowQuickNote] = useState(false);
     const [quickNote, setQuickNote] = useState('');
     const [startMenuOpen, setStartMenuOpen] = useState(false);
-    const [showTerminal, setShowTerminal] = useState(false);
-    const [screensaverMode, setScreensaverMode] = useState<'eye' | 'matrix'>('eye'); 
+    const [showTerminal, setShowTerminal] = useState(false); 
 
     const toggleWindow = (type: WindowType) => {
         bringToFront(type);
@@ -1878,52 +1870,6 @@ const App: React.FC = () => {
             )}
 
 
-
-
-            <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/50 backdrop-blur-sm pointer-events-auto" 
-                 style={{ 
-                     zIndex: zIndices[WindowType.SOCIAL_WEB],
-                     display: windows[WindowType.SOCIAL_WEB].closed ? 'none' : 'flex' 
-                 }}>
-                {/* @ts-ignore */}
-                <SocialWeb
-                    npcRegistry={currentSession.npcRegistry || {}}
-                    userStats={currentSession.userRPStats}
-                    onClose={() => updateWindowState(WindowType.SOCIAL_WEB, { closed: true })}
-                    isMinimized={windows[WindowType.SOCIAL_WEB].minimized}
-                    isMaximized={windows[WindowType.SOCIAL_WEB].maximized}
-                    onMinimize={() => updateWindowState(WindowType.SOCIAL_WEB, { minimized: !windows[WindowType.SOCIAL_WEB].minimized })}
-                    onMaximize={() => updateWindowState(WindowType.SOCIAL_WEB, { maximized: !windows[WindowType.SOCIAL_WEB].maximized })}
-                />
-            </div>
-
-            <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/50 backdrop-blur-sm pointer-events-auto" 
-                 style={{ 
-                     zIndex: zIndices[WindowType.CRAFTING],
-                     display: windows[WindowType.CRAFTING].closed ? 'none' : 'flex' 
-                 }}>
-                {/* @ts-ignore */}
-                <CraftingWindow
-                    inventory={currentSession.userRPStats?.inventory || []}
-                    onUpdateInventory={(newInv) => {
-                        setCurrentSession(prev => {
-                            // @ts-ignore
-                            const updated = { 
-                                ...prev, 
-                                userRPStats: { ...prev.userRPStats, inventory: newInv } 
-                            };
-                            sessionService.save(updated);
-                            return updated;
-                        });
-                    }}
-                    onClose={() => updateWindowState(WindowType.CRAFTING, { closed: true })}
-                    isMinimized={windows[WindowType.CRAFTING].minimized}
-                    isMaximized={windows[WindowType.CRAFTING].maximized}
-                    onMinimize={() => updateWindowState(WindowType.CRAFTING, { minimized: !windows[WindowType.CRAFTING].minimized })}
-                    onMaximize={() => updateWindowState(WindowType.CRAFTING, { maximized: !windows[WindowType.CRAFTING].maximized })}
-                />
-            </div>
-
             <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/50 backdrop-blur-sm pointer-events-auto" 
                  style={{ 
                      zIndex: zIndices[WindowType.COMBAT],
@@ -1991,9 +1937,6 @@ const App: React.FC = () => {
                                 </button>
                                 <button onClick={() => { setShowTerminal(true); setStartMenuOpen(false); }} className="flex items-center gap-3 p-2 hover:bg-[color:var(--lain-cyan)] hover:text-black transition-colors text-xs font-bold tracking-wider group">
                                     <Terminal size={14} className="group-hover:scale-110 transition-transform"/> TERMINAL_MODE
-                                </button>
-                                <button onClick={() => setScreensaverMode(prev => prev === 'eye' ? 'matrix' : 'eye')} className="flex items-center gap-3 p-2 hover:bg-[color:var(--lain-cyan)] hover:text-black transition-colors text-xs font-bold tracking-wider group">
-                                    <Activity size={14} className="group-hover:scale-110 transition-transform"/> TOGGLE_SCREENSAVER
                                 </button>
                                 <button onClick={() => handleStartMenuAction('mute')} className="flex items-center gap-3 p-2 hover:bg-[color:var(--lain-cyan)] hover:text-black transition-colors text-xs font-bold tracking-wider group">
                                     {settings.sound.enabled ? <Volume2 size={14}/> : <VolumeX size={14}/>} AUDIO_TOGGLE
@@ -2720,22 +2663,6 @@ const App: React.FC = () => {
                                                     title="Initiate Combat Simulation"
                                                 >
                                                     <Sword size={8} /> FIGHT
-                                                </button>
-
-                                                <button 
-                                                    onClick={() => toggleWindow(WindowType.CRAFTING)}
-                                                    className="px-2 py-1 text-[8px] border border-[color:var(--lain-cyan)]/30 hover:border-[color:var(--lain-cyan)] hover:bg-[color:var(--lain-cyan)] hover:text-black transition-colors font-bold tracking-wider text-left bg-black flex items-center gap-1 truncate"
-                                                    title="Open Crafting"
-                                                >
-                                                    <Hammer size={8} /> CRAFT
-                                                </button>
-
-                                                <button 
-                                                    onClick={() => toggleWindow(WindowType.SOCIAL_WEB)}
-                                                    className="px-2 py-1 text-[8px] border border-[color:var(--lain-cyan)]/30 hover:border-[color:var(--lain-cyan)] hover:bg-[color:var(--lain-cyan)] hover:text-black transition-colors font-bold tracking-wider text-left bg-black flex items-center gap-1 truncate"
-                                                    title="Open Social Web"
-                                                >
-                                                    <Users size={8} /> SOCIAL
                                                 </button>
                                             </div>
 
