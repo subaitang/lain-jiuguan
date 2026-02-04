@@ -13,32 +13,20 @@ interface DiceRollerProps {
     isMaximized: boolean;
     onMinimize: () => void;
     onMaximize: () => void;
-    userStats?: RPStats;
+    userStats?: RPStats; // Added for modifiers
     language?: string;
-    history?: string[];
-    onUpdateHistory?: (history: string[]) => void;
 }
 
 type DieType = 'd4' | 'd6' | 'd8' | 'd10' | 'd12' | 'd20' | 'd100';
 
 export const DiceRoller: React.FC<DiceRollerProps> = ({ 
-    onRollComplete, onClose, isMinimized, isMaximized, onMinimize, onMaximize, userStats, language = 'en',
-    history: propHistory, onUpdateHistory
+    onRollComplete, onClose, isMinimized, isMaximized, onMinimize, onMaximize, userStats, language = 'en'
 }) => {
     const [rolling, setRolling] = useState(false);
     const [result, setResult] = useState<number | null>(null);
     const [selectedDie, setSelectedDie] = useState<DieType>('d20');
     const [modifier, setModifier] = useState<number>(0);
-    const [localHistory, setLocalHistory] = useState<string[]>([]);
-
-    const history = propHistory || localHistory;
-    const updateHistory = (newHistory: string[]) => {
-        if (onUpdateHistory) {
-            onUpdateHistory(newHistory);
-        } else {
-            setLocalHistory(newHistory);
-        }
-    };
+    const [history, setHistory] = useState<string[]>([]);
 
     const diceOptions: { type: DieType, max: number, label: string }[] = [
         { type: 'd4', max: 4, label: 'D4' },
@@ -71,12 +59,11 @@ export const DiceRoller: React.FC<DiceRollerProps> = ({
                 setRolling(false);
                 audio.playConfirmSound();
                 
+                // Format: D20(15) + 2 = 17
                 const sign = modifier >= 0 ? '+' : '-';
                 const modText = modifier !== 0 ? ` ${sign} ${Math.abs(modifier)}` : '';
-                const timestamp = new Date().toLocaleTimeString();
-                const resultStr = `[${timestamp}] ${selectedDie.toUpperCase()}(${rawResult})${modText} = ${finalResult}`;
-                
-                updateHistory([resultStr, ...history].slice(0, 50));
+                const resultStr = `${selectedDie.toUpperCase()}(${rawResult})${modText} = ${finalResult}`;
+                setHistory(prev => [resultStr, ...prev].slice(0, 10));
             } else {
                 audio.playLoadTick();
             }
@@ -90,6 +77,7 @@ export const DiceRoller: React.FC<DiceRollerProps> = ({
         }
     };
 
+    // Auto-calculate modifier from stats (D&D style: (Stat - 10) / 2)
     const applyStatModifier = (statValue: number) => {
         const mod = Math.floor((statValue - 10) / 2);
         setModifier(mod);
@@ -108,6 +96,7 @@ export const DiceRoller: React.FC<DiceRollerProps> = ({
         >
             <div className="flex flex-col h-full bg-black/90 text-[color:var(--lain-cyan)] font-['Share_Tech_Mono'] p-4">
                 
+                {/* Visual Display */}
                 <div className="flex-1 flex flex-col items-center justify-center border border-[color:var(--lain-cyan)]/30 bg-[color:var(--lain-cyan)]/5 relative mb-4">
                     <div className="absolute inset-0 bg-grid-pattern opacity-20 pointer-events-none"></div>
                     
@@ -116,6 +105,7 @@ export const DiceRoller: React.FC<DiceRollerProps> = ({
                     </div>
                     <div className="text-xs tracking-[0.5em] mt-2 opacity-60 uppercase">{rolling ? t('dice_calc', lang) : selectedDie.toUpperCase()}</div>
                     
+                    {/* Modifier Display Overlay */}
                     {modifier !== 0 && !rolling && (
                         <div className="absolute top-2 right-2 text-[10px] font-bold bg-black/50 px-2 py-1 rounded border border-[color:var(--lain-cyan)]/30">
                             MOD: {modifier > 0 ? `+${modifier}` : modifier}
@@ -123,6 +113,7 @@ export const DiceRoller: React.FC<DiceRollerProps> = ({
                     )}
                 </div>
 
+                {/* Controls */}
                 <div className="flex flex-col gap-3 mb-4">
                     <div className="grid grid-cols-4 gap-2">
                         {diceOptions.map(die => (
@@ -136,6 +127,7 @@ export const DiceRoller: React.FC<DiceRollerProps> = ({
                         ))}
                     </div>
 
+                    {/* Modifier Section */}
                     <div className="flex gap-2 items-center border-t border-[color:var(--lain-cyan)]/20 pt-2">
                         <span className="text-[10px] font-bold opacity-70">{t('dice_mod', lang)}:</span>
                         <input 
@@ -145,11 +137,13 @@ export const DiceRoller: React.FC<DiceRollerProps> = ({
                             className="w-16 bg-black border border-[color:var(--lain-cyan)]/50 text-center text-xs p-1 focus:outline-none"
                         />
                         
+                        {/* Auto-Stat Buttons */}
                         {userStats && (
                             <div className="flex gap-1 flex-1 overflow-x-auto no-scrollbar">
                                 {Object.entries(userStats.attributes).map(([key, val]) => (
                                     <button 
                                         key={key}
+                                        // Added explicit cast to number to resolve TypeScript 'unknown' error from Object.entries
                                         onClick={() => applyStatModifier(val as number)}
                                         className="px-2 py-1 border border-[color:var(--lain-cyan)]/30 hover:bg-[color:var(--lain-cyan)] hover:text-black text-[9px] font-bold transition-colors whitespace-nowrap"
                                         title={`${key}: ${val}`}
@@ -180,6 +174,7 @@ export const DiceRoller: React.FC<DiceRollerProps> = ({
                     )}
                 </div>
 
+                {/* History */}
                 <div className="mt-4 border-t border-[color:var(--lain-cyan)]/20 pt-2">
                     <div className="text-[10px] opacity-50 mb-1 tracking-widest">{t('dice_log', lang)}</div>
                     <div className="h-20 overflow-y-auto scrollbar-thin space-y-1 text-[10px] font-mono">

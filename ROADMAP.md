@@ -2,7 +2,7 @@
 # 🌌 Wired Navi // System Roadmap
 
 Current Status: **Stable // v12.6**
-Next Phase: **Phase 3: Core Intelligence (AI)**
+Next Phase: **Phase 2: RPG Depth (Gameplay)**
 
 ## 🛠 Phase 1: Immersion & Visuals (Complete)
 - [x] **Scene Visualization**: Integration with Image Gen APIs to render the current RP scene or NPC portrait on demand.
@@ -10,13 +10,13 @@ Next Phase: **Phase 3: Core Intelligence (AI)**
 - [x] **Retro-Terminal Mode**: A pure text-based command line interface for "Hacking" minigames or advanced queries.
 - [x] **Matrix Rain / Glitch Screens**: More screensaver options.
 
-## ⚔️ Phase 2: RPG Depth (Gameplay) (Complete)
+## ⚔️ Phase 2: RPG Depth (Gameplay) (Current Focus)
 - [x] **Inventory Crafting**: A system to combine items found in RP mode.
 - [x] **Combat System**: A turn-based graphical interface for battles (Initiative, HP bars, Action menu).
 - [x] **NPC Social Web**: A visual graph showing how NPCs relate to each other (Friend/Enemy/Neutral).
-- [x] **Dice Check History**: A log of all dice rolls and their outcomes.
+- [ ] **Dice Check History**: A log of all dice rolls and their outcomes.
 
-## 🧠 Phase 3: Core Intelligence (AI) (Current Focus)
+## 🧠 Phase 3: Core Intelligence (AI)
 - [ ] **Autonomous Agency**: Allow the AI to initiate conversations or events when you are idle.
 - [ ] **Dream Mode**: The AI processes memories while "sleeping" and generates a dream log.
 - [ ] **Voice Call Mode**: Real-time voice-to-voice interaction.

@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect, useRef } from 'react';
-import { Hammer, Send, Wifi, Settings as SettingsIcon, Terminal, Volume2, VolumeX, RefreshCw, X, Square, RotateCcw, Monitor, Network, Disc, HardDrive, Image as ImageIcon, Speech, EyeOff, Paperclip, Smile, Edit2, Check, CloudLightning, Activity, Video, Copy, BrainCircuit, Mic, Database, Heart, Zap, AlertCircle, Reply, AtSign, Globe, Share2, User, UserPlus, Users, Languages, Sword, Dice5, Eye, Map, MessageCircle, Footprints, Shield, Skull, Dna, Hexagon, Cpu, PlayCircle, Hourglass, Target, ChevronUp, ChevronLeft, ChevronRight, PenTool, Loader2, MicOff, Brain, Map as MapIcon, Play, Save, FileText, LayoutGrid, EyeOff as EyeOffIcon, StickyNote, Scan, Box, Power, Maximize, AlertTriangle, Music } from 'lucide-react';
+import { Send, Wifi, Settings as SettingsIcon, Terminal, Volume2, VolumeX, RefreshCw, X, Square, RotateCcw, Monitor, Network, Disc, HardDrive, Image as ImageIcon, Speech, EyeOff, Paperclip, Smile, Edit2, Check, CloudLightning, Activity, Video, Copy, BrainCircuit, Mic, Database, Heart, Zap, AlertCircle, Reply, AtSign, Globe, Share2, User, UserPlus, Users, Languages, Sword, Dice5, Eye, Map, MessageCircle, Footprints, Shield, Skull, Dna, Hexagon, Cpu, PlayCircle, Hourglass, Target, ChevronUp, ChevronLeft, ChevronRight, PenTool, Loader2, MicOff, Brain, Map as MapIcon, Play, Save, FileText, LayoutGrid, EyeOff as EyeOffIcon, StickyNote, Scan, Box, Power, Maximize, AlertTriangle, Music, Hammer } from 'lucide-react';
 import { NaviWindow } from './components/NaviWindow.tsx';
 import { AudioVisualizer } from './components/AudioVisualizer.tsx';
 import { BootScreen } from './components/BootScreen.tsx';
@@ -423,7 +423,6 @@ const App: React.FC = () => {
             if (!sess.rpMessages) sess.rpMessages = sess.messages || [];
             if (!sess.msgMessages) sess.msgMessages = [];
             if (!sess.npcRegistry) sess.npcRegistry = {};
-            if (!sess.diceLog) sess.diceLog = [];
 
             if (!sess.rpDate) {
                 const now = new Date();
@@ -2903,14 +2902,6 @@ const App: React.FC = () => {
                             onMaximize={() => {}}
                             userStats={currentSession.userRPStats} 
                             language={settings.user.language}
-                            history={currentSession.diceLog || []}
-                            onUpdateHistory={(newHistory) => {
-                                setCurrentSession(prev => {
-                                    const updated = { ...prev, diceLog: newHistory };
-                                    sessionService.save(updated);
-                                    return updated;
-                                });
-                            }}
                         />
                     </div>
                 )}
